@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EmpresaMaterialInformatico.sql · Portafolio Base de Datos II</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant Garamond:wght@600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#020711;color:#d6e4ec;font-family:Segoe UI,Arial,sans-serif}
+.wrap{max-width:1100px;margin:auto;padding:36px 5vw 70px}
+.bar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:20px}
+.btn{display:inline-block;color:#9be8ff;text-decoration:none;border:1px solid rgba(53,207,255,.35);border-radius:8px;padding:9px 13px;background:rgba(53,207,255,.05);font:inherit;cursor:pointer}
+.btn:hover{background:rgba(53,207,255,.15)}
+h1{font-family:Cormorant Garamond,serif;color:#ffe18a;font-size:22px;margin:0 0 6px;word-break:break-all}
+p{color:#9eb2c0;margin:0 0 18px}
+pre{margin:0;padding:22px;overflow:auto;border:1px solid rgba(53,207,255,.22);border-radius:12px;background:#07121f;font:14px/1.6 Consolas,Menlo,monospace;color:#cfe8f5;tab-size:4}
+.k{color:#35cfff;font-weight:600}.c{color:#6f8a99;font-style:italic}.s{color:#ffe18a}
+</style></head><body><div class="wrap">
+<div class="bar"><a class="btn" href="javascript:history.back()">← Volver</a>
+<a class="btn" href="EmpresaMaterialInformatico.sql" download>⬇ Descargar .sql</a>
+<button class="btn" onclick="navigator.clipboard.writeText(document.getElementById('code').innerText).then(()=>this.textContent='✔ Copiado')">Copiar código</button></div>
+<h1>EmpresaMaterialInformatico.sql</h1><p>Script T-SQL (SQL Server) mostrado en HTML.</p>
+<pre id="code"><span class="c">-- =====================================================================</span>
+<span class="c">-- ACTIVIDAD 02 - ENUNCIADO 02: EMPRESA DE MATERIAL INFORMATICO</span>
+<span class="c">-- Modelo fisico para SQL Server</span>
+<span class="c">--</span>
+<span class="c">-- Este script crea la base de datos EmpresaMaterialInformatico desde</span>
+<span class="c">-- cero. Si ya existe una con ese nombre, la elimina y la vuelve a crear.</span>
+<span class="c">-- =====================================================================</span>
+
+<span class="k">USE</span> master;
+<span class="k">GO</span>
+
+<span class="k">IF</span> <span class="k">DB_ID</span>(N<span class="s">'EmpresaMaterialInformatico'</span>) IS <span class="k">NOT</span> <span class="k">NULL</span>
+<span class="k">BEGIN</span>
+    <span class="k">ALTER</span> <span class="k">DATABASE</span> EmpresaMaterialInformatico <span class="k">SET</span> SINGLE_USER <span class="k">WITH</span> <span class="k">ROLLBACK</span> <span class="k">IMMEDIATE</span>;
+    <span class="k">DROP</span> <span class="k">DATABASE</span> EmpresaMaterialInformatico;
+<span class="k">END</span>
+<span class="k">GO</span>
+
+<span class="k">CREATE</span> <span class="k">DATABASE</span> EmpresaMaterialInformatico;
+<span class="k">GO</span>
+
+<span class="k">USE</span> EmpresaMaterialInformatico;
+<span class="k">GO</span>
+
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="c">-- SECCION: se identifica por un id y un nombre de seccion.</span>
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="k">CREATE</span> <span class="k">TABLE</span> dbo.Seccion (
+    IdSeccion      <span class="k">INT</span>          <span class="k">IDENTITY</span>(1,1) <span class="k">NOT</span> <span class="k">NULL</span>,
+    NombreSeccion  <span class="k">VARCHAR</span>(60)  <span class="k">NOT</span> <span class="k">NULL</span>,
+
+    <span class="k">CONSTRAINT</span> PK_Seccion <span class="k">PRIMARY</span> <span class="k">KEY</span> (IdSeccion),
+    <span class="k">CONSTRAINT</span> UQ_Seccion_Nombre <span class="k">UNIQUE</span> (NombreSeccion)
+);
+<span class="k">GO</span>
+
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="c">-- EMPLEADO: NIF, nombre, apellidos y la seccion donde trabaja.</span>
+<span class="c">-- Un empleado trabaja en una unica seccion.</span>
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="k">CREATE</span> <span class="k">TABLE</span> dbo.Empleado (
+    NIF        <span class="k">VARCHAR</span>(9)    <span class="k">NOT</span> <span class="k">NULL</span>,
+    Nombre     <span class="k">VARCHAR</span>(60)   <span class="k">NOT</span> <span class="k">NULL</span>,
+    Apellidos  <span class="k">VARCHAR</span>(100)  <span class="k">NOT</span> <span class="k">NULL</span>,
+    IdSeccion  <span class="k">INT</span>           <span class="k">NOT</span> <span class="k">NULL</span>,
+
+    <span class="k">CONSTRAINT</span> PK_Empleado <span class="k">PRIMARY</span> <span class="k">KEY</span> (NIF),
+    <span class="k">CONSTRAINT</span> FK_Empleado_Seccion
+        <span class="k">FOREIGN</span> <span class="k">KEY</span> (IdSeccion) <span class="k">REFERENCES</span> dbo.Seccion(IdSeccion),
+    <span class="k">CONSTRAINT</span> CHK_Empleado_NIF <span class="k">CHECK</span> (LEN(NIF) &gt;= 8)
+);
+<span class="k">GO</span>
+
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="c">-- CLIENTE: NIF, nombre, apellidos, domicilio, ciudad, provincia</span>
+<span class="c">-- y telefono.</span>
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="k">CREATE</span> <span class="k">TABLE</span> dbo.Cliente (
+    NIF        <span class="k">VARCHAR</span>(9)    <span class="k">NOT</span> <span class="k">NULL</span>,
+    Nombre     <span class="k">VARCHAR</span>(60)   <span class="k">NOT</span> <span class="k">NULL</span>,
+    Apellidos  <span class="k">VARCHAR</span>(100)  <span class="k">NOT</span> <span class="k">NULL</span>,
+    Domicilio  <span class="k">VARCHAR</span>(150)  <span class="k">NOT</span> <span class="k">NULL</span>,
+    Ciudad     <span class="k">VARCHAR</span>(60)   <span class="k">NOT</span> <span class="k">NULL</span>,
+    Provincia  <span class="k">VARCHAR</span>(60)   <span class="k">NOT</span> <span class="k">NULL</span>,
+    Telefono   <span class="k">VARCHAR</span>(15)   <span class="k">NULL</span>,
+
+    <span class="k">CONSTRAINT</span> PK_Cliente <span class="k">PRIMARY</span> <span class="k">KEY</span> (NIF),
+    <span class="k">CONSTRAINT</span> CHK_Cliente_NIF <span class="k">CHECK</span> (LEN(NIF) &gt;= 8)
+);
+<span class="k">GO</span>
+
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="c">-- EQUIPO: codigo de equipo, descripcion, precio y stock disponible.</span>
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="k">CREATE</span> <span class="k">TABLE</span> dbo.Equipo (
+    CodigoEquipo  <span class="k">VARCHAR</span>(10)    <span class="k">NOT</span> <span class="k">NULL</span>,
+    Descripcion   <span class="k">VARCHAR</span>(200)   <span class="k">NOT</span> <span class="k">NULL</span>,
+    Precio        <span class="k">DECIMAL</span>(10,2)  <span class="k">NOT</span> <span class="k">NULL</span>,
+    Stock         <span class="k">INT</span>            <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 0,
+
+    <span class="k">CONSTRAINT</span> PK_Equipo <span class="k">PRIMARY</span> <span class="k">KEY</span> (CodigoEquipo),
+    <span class="k">CONSTRAINT</span> CHK_Equipo_Precio <span class="k">CHECK</span> (Precio &gt;= 0),
+    <span class="k">CONSTRAINT</span> CHK_Equipo_Stock  <span class="k">CHECK</span> (Stock &gt;= 0)
+);
+<span class="k">GO</span>
+
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="c">-- COMPONENTE: codigo de componente, descripcion, precio y stock.</span>
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="k">CREATE</span> <span class="k">TABLE</span> dbo.Componente (
+    CodigoComponente  <span class="k">VARCHAR</span>(10)    <span class="k">NOT</span> <span class="k">NULL</span>,
+    Descripcion       <span class="k">VARCHAR</span>(200)   <span class="k">NOT</span> <span class="k">NULL</span>,
+    Precio            <span class="k">DECIMAL</span>(10,2)  <span class="k">NOT</span> <span class="k">NULL</span>,
+    Stock             <span class="k">INT</span>            <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 0,
+
+    <span class="k">CONSTRAINT</span> PK_Componente <span class="k">PRIMARY</span> <span class="k">KEY</span> (CodigoComponente),
+    <span class="k">CONSTRAINT</span> CHK_Componente_Precio <span class="k">CHECK</span> (Precio &gt;= 0),
+    <span class="k">CONSTRAINT</span> CHK_Componente_Stock  <span class="k">CHECK</span> (Stock &gt;= 0)
+);
+<span class="k">GO</span>
+
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="c">-- EQUIPO_COMPONENTE: un equipo consta de varios componentes y se</span>
+<span class="c">-- guarda la cantidad de cada componente que se necesita.</span>
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="k">CREATE</span> <span class="k">TABLE</span> dbo.EquipoComponente (
+    CodigoEquipo      <span class="k">VARCHAR</span>(10)  <span class="k">NOT</span> <span class="k">NULL</span>,
+    CodigoComponente  <span class="k">VARCHAR</span>(10)  <span class="k">NOT</span> <span class="k">NULL</span>,
+    Cantidad          <span class="k">INT</span>          <span class="k">NOT</span> <span class="k">NULL</span>,
+
+    <span class="k">CONSTRAINT</span> PK_EquipoComponente <span class="k">PRIMARY</span> <span class="k">KEY</span> (CodigoEquipo, CodigoComponente),
+    <span class="k">CONSTRAINT</span> FK_EquipoComponente_Equipo
+        <span class="k">FOREIGN</span> <span class="k">KEY</span> (CodigoEquipo) <span class="k">REFERENCES</span> dbo.Equipo(CodigoEquipo),
+    <span class="k">CONSTRAINT</span> FK_EquipoComponente_Componente
+        <span class="k">FOREIGN</span> <span class="k">KEY</span> (CodigoComponente) <span class="k">REFERENCES</span> dbo.Componente(CodigoComponente),
+    <span class="k">CONSTRAINT</span> CHK_EquipoComponente_Cantidad <span class="k">CHECK</span> (Cantidad &gt; 0)
+);
+<span class="k">GO</span>
+
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="c">-- COMPRA: cada compra la hace un cliente en una fecha y en ella</span>
+<span class="c">-- interviene un empleado. Como cada compra es un registro distinto, un</span>
+<span class="c">-- mismo cliente puede comprar lo mismo en diferentes fechas y queda el</span>
+<span class="c">-- historico completo.</span>
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="k">CREATE</span> <span class="k">TABLE</span> dbo.Compra (
+    IdCompra     <span class="k">INT</span>         <span class="k">IDENTITY</span>(1,1) <span class="k">NOT</span> <span class="k">NULL</span>,
+    NIFCliente   <span class="k">VARCHAR</span>(9)  <span class="k">NOT</span> <span class="k">NULL</span>,
+    NIFEmpleado  <span class="k">VARCHAR</span>(9)  <span class="k">NOT</span> <span class="k">NULL</span>,
+    FechaCompra  <span class="k">DATE</span>        <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> CAST(SYSDATETIME() <span class="k">AS</span> <span class="k">DATE</span>),
+
+    <span class="k">CONSTRAINT</span> PK_Compra <span class="k">PRIMARY</span> <span class="k">KEY</span> (IdCompra),
+    <span class="k">CONSTRAINT</span> FK_Compra_Cliente
+        <span class="k">FOREIGN</span> <span class="k">KEY</span> (NIFCliente) <span class="k">REFERENCES</span> dbo.Cliente(NIF),
+    <span class="k">CONSTRAINT</span> FK_Compra_Empleado
+        <span class="k">FOREIGN</span> <span class="k">KEY</span> (NIFEmpleado) <span class="k">REFERENCES</span> dbo.Empleado(NIF)
+);
+<span class="k">GO</span>
+
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="c">-- COMPRA_EQUIPO: equipos completos incluidos en cada compra y cantidad.</span>
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="k">CREATE</span> <span class="k">TABLE</span> dbo.CompraEquipo (
+    IdCompra      <span class="k">INT</span>          <span class="k">NOT</span> <span class="k">NULL</span>,
+    CodigoEquipo  <span class="k">VARCHAR</span>(10)  <span class="k">NOT</span> <span class="k">NULL</span>,
+    Cantidad      <span class="k">INT</span>          <span class="k">NOT</span> <span class="k">NULL</span>,
+
+    <span class="k">CONSTRAINT</span> PK_CompraEquipo <span class="k">PRIMARY</span> <span class="k">KEY</span> (IdCompra, CodigoEquipo),
+    <span class="k">CONSTRAINT</span> FK_CompraEquipo_Compra
+        <span class="k">FOREIGN</span> <span class="k">KEY</span> (IdCompra) <span class="k">REFERENCES</span> dbo.Compra(IdCompra),
+    <span class="k">CONSTRAINT</span> FK_CompraEquipo_Equipo
+        <span class="k">FOREIGN</span> <span class="k">KEY</span> (CodigoEquipo) <span class="k">REFERENCES</span> dbo.Equipo(CodigoEquipo),
+    <span class="k">CONSTRAINT</span> CHK_CompraEquipo_Cantidad <span class="k">CHECK</span> (Cantidad &gt; 0)
+);
+<span class="k">GO</span>
+
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="c">-- COMPRA_COMPONENTE: componentes sueltos incluidos en cada compra</span>
+<span class="c">-- y cantidad.</span>
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="k">CREATE</span> <span class="k">TABLE</span> dbo.CompraComponente (
+    IdCompra          <span class="k">INT</span>          <span class="k">NOT</span> <span class="k">NULL</span>,
+    CodigoComponente  <span class="k">VARCHAR</span>(10)  <span class="k">NOT</span> <span class="k">NULL</span>,
+    Cantidad          <span class="k">INT</span>          <span class="k">NOT</span> <span class="k">NULL</span>,
+
+    <span class="k">CONSTRAINT</span> PK_CompraComponente <span class="k">PRIMARY</span> <span class="k">KEY</span> (IdCompra, CodigoComponente),
+    <span class="k">CONSTRAINT</span> FK_CompraComponente_Compra
+        <span class="k">FOREIGN</span> <span class="k">KEY</span> (IdCompra) <span class="k">REFERENCES</span> dbo.Compra(IdCompra),
+    <span class="k">CONSTRAINT</span> FK_CompraComponente_Componente
+        <span class="k">FOREIGN</span> <span class="k">KEY</span> (CodigoComponente) <span class="k">REFERENCES</span> dbo.Componente(CodigoComponente),
+    <span class="k">CONSTRAINT</span> CHK_CompraComponente_Cantidad <span class="k">CHECK</span> (Cantidad &gt; 0)
+);
+<span class="k">GO</span>
+
+<span class="c">-- =====================================================================</span>
+<span class="c">-- DATOS DE EJEMPLO (para poder visualizar la base de datos)</span>
+<span class="c">-- =====================================================================</span>
+
+<span class="k">INSERT</span> <span class="k">INTO</span> dbo.Seccion (NombreSeccion) <span class="k">VALUES</span>
+(<span class="s">'Ventas'</span>),
+(<span class="s">'Almacen'</span>),
+(<span class="s">'Atencion al cliente'</span>);
+<span class="k">GO</span>
+
+<span class="k">INSERT</span> <span class="k">INTO</span> dbo.Empleado (NIF, Nombre, Apellidos, IdSeccion) <span class="k">VALUES</span>
+(<span class="s">'11111111A'</span>, <span class="s">'Ana'</span>,   <span class="s">'Lopez Garcia'</span>, 1),
+(<span class="s">'22222222B'</span>, <span class="s">'Luis'</span>,  <span class="s">'Perez Ruiz'</span>,   1),
+(<span class="s">'33333333C'</span>, <span class="s">'Marta'</span>, <span class="s">'Sanchez Gil'</span>,  3);
+<span class="k">GO</span>
+
+<span class="k">INSERT</span> <span class="k">INTO</span> dbo.Cliente (NIF, Nombre, Apellidos, Domicilio, Ciudad, Provincia, Telefono) <span class="k">VALUES</span>
+(<span class="s">'88888888H'</span>, <span class="s">'Javier'</span>, <span class="s">'Ortiz Ramos'</span>, <span class="s">'Calle Alcala 20'</span>,          <span class="s">'Madrid'</span>,   <span class="s">'Madrid'</span>,   <span class="s">'600888888'</span>),
+(<span class="s">'99999999J'</span>, <span class="s">'Sofia'</span>,  <span class="s">'Blanco Lara'</span>, <span class="s">'Avenida Constitucion 8'</span>,   <span class="s">'Sevilla'</span>,  <span class="s">'Sevilla'</span>,  <span class="s">'600999999'</span>),
+(<span class="s">'10101010K'</span>, <span class="s">'Diego'</span>,  <span class="s">'Vidal Paz'</span>,   <span class="s">'Calle Colon 3'</span>,            <span class="s">'Valencia'</span>, <span class="s">'Valencia'</span>, <span class="k">NULL</span>);
+<span class="k">GO</span>
+
+<span class="k">INSERT</span> <span class="k">INTO</span> dbo.Componente (CodigoComponente, Descripcion, Precio, Stock) <span class="k">VALUES</span>
+(<span class="s">'CP001'</span>, <span class="s">'Procesador 8 nucleos'</span>,         250.00,  40),
+(<span class="s">'CP002'</span>, <span class="s">'Memoria RAM 8GB'</span>,               45.00, 120),
+(<span class="s">'CP003'</span>, <span class="s">'Disco SSD 512GB'</span>,               60.00,  80),
+(<span class="s">'CP004'</span>, <span class="s">'Placa base'</span>,                   120.00,  35),
+(<span class="s">'CP005'</span>, <span class="s">'Fuente de alimentacion 550W'</span>,   50.00,  60),
+(<span class="s">'CP006'</span>, <span class="s">'Tarjeta grafica 8GB'</span>,          400.00,  20);
+<span class="k">GO</span>
+
+<span class="k">INSERT</span> <span class="k">INTO</span> dbo.Equipo (CodigoEquipo, Descripcion, Precio, Stock) <span class="k">VALUES</span>
+(<span class="s">'EQ001'</span>, <span class="s">'PC de oficina'</span>,  650.00, 15),
+(<span class="s">'EQ002'</span>, <span class="s">'PC gamer'</span>,      1400.00,  8);
+<span class="k">GO</span>
+
+<span class="k">INSERT</span> <span class="k">INTO</span> dbo.EquipoComponente (CodigoEquipo, CodigoComponente, Cantidad) <span class="k">VALUES</span>
+(<span class="s">'EQ001'</span>, <span class="s">'CP001'</span>, 1),
+(<span class="s">'EQ001'</span>, <span class="s">'CP002'</span>, 2),
+(<span class="s">'EQ001'</span>, <span class="s">'CP003'</span>, 1),
+(<span class="s">'EQ001'</span>, <span class="s">'CP004'</span>, 1),
+(<span class="s">'EQ001'</span>, <span class="s">'CP005'</span>, 1),
+(<span class="s">'EQ002'</span>, <span class="s">'CP001'</span>, 1),
+(<span class="s">'EQ002'</span>, <span class="s">'CP002'</span>, 4),
+(<span class="s">'EQ002'</span>, <span class="s">'CP003'</span>, 2),
+(<span class="s">'EQ002'</span>, <span class="s">'CP004'</span>, 1),
+(<span class="s">'EQ002'</span>, <span class="s">'CP005'</span>, 1),
+(<span class="s">'EQ002'</span>, <span class="s">'CP006'</span>, 1);
+<span class="k">GO</span>
+
+<span class="k">INSERT</span> <span class="k">INTO</span> dbo.Compra (NIFCliente, NIFEmpleado, FechaCompra) <span class="k">VALUES</span>
+(<span class="s">'88888888H'</span>, <span class="s">'11111111A'</span>, <span class="s">'2026-03-10'</span>),
+(<span class="s">'88888888H'</span>, <span class="s">'11111111A'</span>, <span class="s">'2026-06-15'</span>),
+(<span class="s">'99999999J'</span>, <span class="s">'22222222B'</span>, <span class="s">'2026-04-02'</span>),
+(<span class="s">'10101010K'</span>, <span class="s">'33333333C'</span>, <span class="s">'2026-05-20'</span>);
+<span class="k">GO</span>
+
+<span class="k">INSERT</span> <span class="k">INTO</span> dbo.CompraEquipo (IdCompra, CodigoEquipo, Cantidad) <span class="k">VALUES</span>
+(1, <span class="s">'EQ001'</span>, 1),
+(2, <span class="s">'EQ001'</span>, 1),
+(3, <span class="s">'EQ002'</span>, 1);
+<span class="k">GO</span>
+
+<span class="k">INSERT</span> <span class="k">INTO</span> dbo.CompraComponente (IdCompra, CodigoComponente, Cantidad) <span class="k">VALUES</span>
+(2, <span class="s">'CP006'</span>, 1),
+(4, <span class="s">'CP002'</span>, 2),
+(4, <span class="s">'CP003'</span>, 1);
+<span class="k">GO</span>
+
+<span class="c">-- =====================================================================</span>
+<span class="c">-- CONSULTAS DE COMPROBACION</span>
+<span class="c">-- =====================================================================</span>
+
+<span class="c">-- Historico de equipos comprados por cada cliente (con fechas)</span>
+<span class="k">SELECT</span> c.NIF, c.Nombre, co.FechaCompra, ce.CodigoEquipo, ce.Cantidad
+<span class="k">FROM</span> dbo.Cliente c
+JOIN dbo.Compra co        <span class="k">ON</span> co.NIFCliente = c.NIF
+JOIN dbo.CompraEquipo ce  <span class="k">ON</span> ce.IdCompra = co.IdCompra
+ORDER BY c.NIF, co.FechaCompra;
+<span class="k">GO</span>
+
+<span class="c">-- Componentes que lleva cada equipo y en que cantidad</span>
+<span class="k">SELECT</span> e.CodigoEquipo, e.Descripcion <span class="k">AS</span> Equipo, c.Descripcion <span class="k">AS</span> Componente, ec.Cantidad
+<span class="k">FROM</span> dbo.Equipo e
+JOIN dbo.EquipoComponente ec <span class="k">ON</span> ec.CodigoEquipo = e.CodigoEquipo
+JOIN dbo.Componente c        <span class="k">ON</span> c.CodigoComponente = ec.CodigoComponente
+ORDER BY e.CodigoEquipo, c.CodigoComponente;
+<span class="k">GO</span>
+
+<span class="k">PRINT</span> <span class="s">'BASE DE DATOS EmpresaMaterialInformatico CREADA CORRECTAMENTE.'</span>;
+<span class="k">GO</span>
+</pre></div></body></html>

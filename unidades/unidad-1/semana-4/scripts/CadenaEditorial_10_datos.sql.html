@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CadenaEditorial_10_datos.sql · Portafolio Base de Datos II</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant Garamond:wght@600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#020711;color:#d6e4ec;font-family:Segoe UI,Arial,sans-serif}
+.wrap{max-width:1100px;margin:auto;padding:36px 5vw 70px}
+.bar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:20px}
+.btn{display:inline-block;color:#9be8ff;text-decoration:none;border:1px solid rgba(53,207,255,.35);border-radius:8px;padding:9px 13px;background:rgba(53,207,255,.05);font:inherit;cursor:pointer}
+.btn:hover{background:rgba(53,207,255,.15)}
+h1{font-family:Cormorant Garamond,serif;color:#ffe18a;font-size:22px;margin:0 0 6px;word-break:break-all}
+p{color:#9eb2c0;margin:0 0 18px}
+pre{margin:0;padding:22px;overflow:auto;border:1px solid rgba(53,207,255,.22);border-radius:12px;background:#07121f;font:14px/1.6 Consolas,Menlo,monospace;color:#cfe8f5;tab-size:4}
+.k{color:#35cfff;font-weight:600}.c{color:#6f8a99;font-style:italic}.s{color:#ffe18a}
+</style></head><body><div class="wrap">
+<div class="bar"><a class="btn" href="javascript:history.back()">← Volver</a>
+<a class="btn" href="CadenaEditorial_10_datos.sql" download>⬇ Descargar .sql</a>
+<button class="btn" onclick="navigator.clipboard.writeText(document.getElementById('code').innerText).then(()=>this.textContent='✔ Copiado')">Copiar código</button></div>
+<h1>CadenaEditorial_10_datos.sql</h1><p>Script T-SQL (SQL Server) mostrado en HTML.</p>
+<pre id="code"><span class="c">-- =====================================================================</span>
+<span class="c">-- ACTIVIDAD 02 - ENUNCIADO 01: CADENA EDITORIAL</span>
+<span class="c">-- Modelo fisico para SQL Server</span>
+<span class="c">--</span>
+<span class="c">-- Este script crea la base de datos CadenaEditorial desde cero.</span>
+<span class="c">-- Si ya existe una con ese nombre, la elimina y la vuelve a crear.</span>
+<span class="c">-- =====================================================================</span>
+
+<span class="k">USE</span> master;
+<span class="k">GO</span>
+
+<span class="k">IF</span> <span class="k">DB_ID</span>(N<span class="s">'CadenaEditorial'</span>) IS <span class="k">NOT</span> <span class="k">NULL</span>
+<span class="k">BEGIN</span>
+    <span class="k">ALTER</span> <span class="k">DATABASE</span> CadenaEditorial <span class="k">SET</span> SINGLE_USER <span class="k">WITH</span> <span class="k">ROLLBACK</span> <span class="k">IMMEDIATE</span>;
+    <span class="k">DROP</span> <span class="k">DATABASE</span> CadenaEditorial;
+<span class="k">END</span>
+<span class="k">GO</span>
+
+<span class="k">CREATE</span> <span class="k">DATABASE</span> CadenaEditorial;
+<span class="k">GO</span>
+
+<span class="k">USE</span> CadenaEditorial;
+<span class="k">GO</span>
+
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="c">-- SUCURSAL: la editorial tiene varias sucursales, con domicilio,</span>
+<span class="c">-- telefono y un codigo de sucursal.</span>
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="k">CREATE</span> <span class="k">TABLE</span> dbo.Sucursal (
+    CodigoSucursal  <span class="k">INT</span>           <span class="k">IDENTITY</span>(1,1) <span class="k">NOT</span> <span class="k">NULL</span>,
+    Domicilio       <span class="k">VARCHAR</span>(150)  <span class="k">NOT</span> <span class="k">NULL</span>,
+    Telefono        <span class="k">VARCHAR</span>(15)   <span class="k">NOT</span> <span class="k">NULL</span>,
+
+    <span class="k">CONSTRAINT</span> PK_Sucursal <span class="k">PRIMARY</span> <span class="k">KEY</span> (CodigoSucursal)
+);
+<span class="k">GO</span>
+
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="c">-- EMPLEADO: cada sucursal tiene varios empleados (nombre, apellidos,</span>
+<span class="c">-- NIF y telefono). Un empleado trabaja en una unica sucursal.</span>
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="k">CREATE</span> <span class="k">TABLE</span> dbo.Empleado (
+    NIF             <span class="k">VARCHAR</span>(9)    <span class="k">NOT</span> <span class="k">NULL</span>,
+    Nombre          <span class="k">VARCHAR</span>(60)   <span class="k">NOT</span> <span class="k">NULL</span>,
+    Apellidos       <span class="k">VARCHAR</span>(100)  <span class="k">NOT</span> <span class="k">NULL</span>,
+    Telefono        <span class="k">VARCHAR</span>(15)   <span class="k">NULL</span>,
+    CodigoSucursal  <span class="k">INT</span>           <span class="k">NOT</span> <span class="k">NULL</span>,
+
+    <span class="k">CONSTRAINT</span> PK_Empleado <span class="k">PRIMARY</span> <span class="k">KEY</span> (NIF),
+    <span class="k">CONSTRAINT</span> FK_Empleado_Sucursal
+        <span class="k">FOREIGN</span> <span class="k">KEY</span> (CodigoSucursal) <span class="k">REFERENCES</span> dbo.Sucursal(CodigoSucursal),
+    <span class="k">CONSTRAINT</span> CHK_Empleado_NIF <span class="k">CHECK</span> (LEN(NIF) &gt;= 8)
+);
+<span class="k">GO</span>
+
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="c">-- REVISTA: titulo, numero de registro, periodicidad y tipo.</span>
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="k">CREATE</span> <span class="k">TABLE</span> dbo.Revista (
+    NumeroRegistro  <span class="k">VARCHAR</span>(20)   <span class="k">NOT</span> <span class="k">NULL</span>,
+    Titulo          <span class="k">VARCHAR</span>(120)  <span class="k">NOT</span> <span class="k">NULL</span>,
+    Periodicidad    <span class="k">VARCHAR</span>(15)   <span class="k">NOT</span> <span class="k">NULL</span>,
+    Tipo            <span class="k">VARCHAR</span>(50)   <span class="k">NOT</span> <span class="k">NULL</span>,
+
+    <span class="k">CONSTRAINT</span> PK_Revista <span class="k">PRIMARY</span> <span class="k">KEY</span> (NumeroRegistro),
+    <span class="k">CONSTRAINT</span> CHK_Revista_Periodicidad <span class="k">CHECK</span> (Periodicidad IN (
+        <span class="s">'DIARIA'</span>, <span class="s">'SEMANAL'</span>, <span class="s">'QUINCENAL'</span>, <span class="s">'MENSUAL'</span>,
+        <span class="s">'BIMESTRAL'</span>, <span class="s">'TRIMESTRAL'</span>, <span class="s">'SEMESTRAL'</span>, <span class="s">'ANUAL'</span>
+    ))
+);
+<span class="k">GO</span>
+
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="c">-- SUCURSAL_REVISTA: en cada sucursal se publican varias revistas y una</span>
+<span class="c">-- revista puede ser publicada por varias sucursales (relacion N:M).</span>
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="k">CREATE</span> <span class="k">TABLE</span> dbo.SucursalRevista (
+    CodigoSucursal  <span class="k">INT</span>           <span class="k">NOT</span> <span class="k">NULL</span>,
+    NumeroRegistro  <span class="k">VARCHAR</span>(20)   <span class="k">NOT</span> <span class="k">NULL</span>,
+
+    <span class="k">CONSTRAINT</span> PK_SucursalRevista <span class="k">PRIMARY</span> <span class="k">KEY</span> (CodigoSucursal, NumeroRegistro),
+    <span class="k">CONSTRAINT</span> FK_SucursalRevista_Sucursal
+        <span class="k">FOREIGN</span> <span class="k">KEY</span> (CodigoSucursal) <span class="k">REFERENCES</span> dbo.Sucursal(CodigoSucursal),
+    <span class="k">CONSTRAINT</span> FK_SucursalRevista_Revista
+        <span class="k">FOREIGN</span> <span class="k">KEY</span> (NumeroRegistro) <span class="k">REFERENCES</span> dbo.Revista(NumeroRegistro)
+);
+<span class="k">GO</span>
+
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="c">-- PERIODISTA: mismos datos que los empleados, mas su especialidad.</span>
+<span class="c">-- No trabajan en las sucursales.</span>
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="k">CREATE</span> <span class="k">TABLE</span> dbo.Periodista (
+    NIF             <span class="k">VARCHAR</span>(9)    <span class="k">NOT</span> <span class="k">NULL</span>,
+    Nombre          <span class="k">VARCHAR</span>(60)   <span class="k">NOT</span> <span class="k">NULL</span>,
+    Apellidos       <span class="k">VARCHAR</span>(100)  <span class="k">NOT</span> <span class="k">NULL</span>,
+    Telefono        <span class="k">VARCHAR</span>(15)   <span class="k">NULL</span>,
+    Especialidad    <span class="k">VARCHAR</span>(80)   <span class="k">NOT</span> <span class="k">NULL</span>,
+
+    <span class="k">CONSTRAINT</span> PK_Periodista <span class="k">PRIMARY</span> <span class="k">KEY</span> (NIF),
+    <span class="k">CONSTRAINT</span> CHK_Periodista_NIF <span class="k">CHECK</span> (LEN(NIF) &gt;= 8)
+);
+<span class="k">GO</span>
+
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="c">-- PERIODISTA_REVISTA: un periodista puede escribir articulos para</span>
+<span class="c">-- varias revistas (relacion N:M).</span>
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="k">CREATE</span> <span class="k">TABLE</span> dbo.PeriodistaRevista (
+    NIFPeriodista   <span class="k">VARCHAR</span>(9)    <span class="k">NOT</span> <span class="k">NULL</span>,
+    NumeroRegistro  <span class="k">VARCHAR</span>(20)   <span class="k">NOT</span> <span class="k">NULL</span>,
+
+    <span class="k">CONSTRAINT</span> PK_PeriodistaRevista <span class="k">PRIMARY</span> <span class="k">KEY</span> (NIFPeriodista, NumeroRegistro),
+    <span class="k">CONSTRAINT</span> FK_PeriodistaRevista_Periodista
+        <span class="k">FOREIGN</span> <span class="k">KEY</span> (NIFPeriodista) <span class="k">REFERENCES</span> dbo.Periodista(NIF),
+    <span class="k">CONSTRAINT</span> FK_PeriodistaRevista_Revista
+        <span class="k">FOREIGN</span> <span class="k">KEY</span> (NumeroRegistro) <span class="k">REFERENCES</span> dbo.Revista(NumeroRegistro)
+);
+<span class="k">GO</span>
+
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="c">-- SECCION_REVISTA: secciones fijas de cada revista (titulo y extension).</span>
+<span class="c">-- La extension se mide en paginas.</span>
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="k">CREATE</span> <span class="k">TABLE</span> dbo.SeccionRevista (
+    IdSeccion         <span class="k">INT</span>           <span class="k">IDENTITY</span>(1,1) <span class="k">NOT</span> <span class="k">NULL</span>,
+    NumeroRegistro    <span class="k">VARCHAR</span>(20)   <span class="k">NOT</span> <span class="k">NULL</span>,
+    Titulo            <span class="k">VARCHAR</span>(100)  <span class="k">NOT</span> <span class="k">NULL</span>,
+    ExtensionPaginas  <span class="k">SMALLINT</span>      <span class="k">NOT</span> <span class="k">NULL</span>,
+
+    <span class="k">CONSTRAINT</span> PK_SeccionRevista <span class="k">PRIMARY</span> <span class="k">KEY</span> (IdSeccion),
+    <span class="k">CONSTRAINT</span> FK_SeccionRevista_Revista
+        <span class="k">FOREIGN</span> <span class="k">KEY</span> (NumeroRegistro) <span class="k">REFERENCES</span> dbo.Revista(NumeroRegistro),
+    <span class="k">CONSTRAINT</span> UQ_SeccionRevista_Titulo <span class="k">UNIQUE</span> (NumeroRegistro, Titulo),
+    <span class="k">CONSTRAINT</span> CHK_SeccionRevista_Extension <span class="k">CHECK</span> (ExtensionPaginas &gt; 0)
+);
+<span class="k">GO</span>
+
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="c">-- EJEMPLAR: informacion de cada ejemplar de una revista (fecha, numero</span>
+<span class="c">-- de paginas y numero de ejemplares vendidos).</span>
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="k">CREATE</span> <span class="k">TABLE</span> dbo.Ejemplar (
+    IdEjemplar          <span class="k">INT</span>          <span class="k">IDENTITY</span>(1,1) <span class="k">NOT</span> <span class="k">NULL</span>,
+    NumeroRegistro      <span class="k">VARCHAR</span>(20)  <span class="k">NOT</span> <span class="k">NULL</span>,
+    FechaPublicacion    <span class="k">DATE</span>         <span class="k">NOT</span> <span class="k">NULL</span>,
+    NumeroPaginas       <span class="k">SMALLINT</span>     <span class="k">NOT</span> <span class="k">NULL</span>,
+    EjemplaresVendidos  <span class="k">INT</span>          <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 0,
+
+    <span class="k">CONSTRAINT</span> PK_Ejemplar <span class="k">PRIMARY</span> <span class="k">KEY</span> (IdEjemplar),
+    <span class="k">CONSTRAINT</span> FK_Ejemplar_Revista
+        <span class="k">FOREIGN</span> <span class="k">KEY</span> (NumeroRegistro) <span class="k">REFERENCES</span> dbo.Revista(NumeroRegistro),
+    <span class="k">CONSTRAINT</span> UQ_Ejemplar_Revista_Fecha <span class="k">UNIQUE</span> (NumeroRegistro, FechaPublicacion),
+    <span class="k">CONSTRAINT</span> CHK_Ejemplar_Paginas <span class="k">CHECK</span> (NumeroPaginas &gt; 0),
+    <span class="k">CONSTRAINT</span> CHK_Ejemplar_Vendidos <span class="k">CHECK</span> (EjemplaresVendidos &gt;= 0)
+);
+<span class="k">GO</span>
+
+<span class="c">-- =====================================================================</span>
+<span class="c">-- DATOS DE EJEMPLO (para poder visualizar la base de datos)</span>
+<span class="c">-- =====================================================================</span>
+
+<span class="k">INSERT</span> <span class="k">INTO</span> dbo.Sucursal (Domicilio, Telefono) <span class="k">VALUES</span>
+(<span class="s">'Calle Mayor 10, Madrid'</span>,          <span class="s">'911111111'</span>),
+(<span class="s">'Avenida del Puerto 25, Valencia'</span>, <span class="s">'963333333'</span>),
+(<span class="s">'Calle Sierpes 5, Sevilla'</span>,        <span class="s">'955555555'</span>);
+<span class="k">GO</span>
+
+<span class="k">INSERT</span> <span class="k">INTO</span> dbo.Empleado (NIF, Nombre, Apellidos, Telefono, CodigoSucursal) <span class="k">VALUES</span>
+(<span class="s">'11111111A'</span>, <span class="s">'Ana'</span>,   <span class="s">'Lopez Garcia'</span>, <span class="s">'600111111'</span>, 1),
+(<span class="s">'22222222B'</span>, <span class="s">'Luis'</span>,  <span class="s">'Perez Ruiz'</span>,   <span class="s">'600222222'</span>, 1),
+(<span class="s">'33333333C'</span>, <span class="s">'Marta'</span>, <span class="s">'Sanchez Gil'</span>,  <span class="s">'600333333'</span>, 2),
+(<span class="s">'44444444D'</span>, <span class="s">'Pablo'</span>, <span class="s">'Diaz Torres'</span>,  <span class="k">NULL</span>,        3);
+<span class="k">GO</span>
+
+<span class="k">INSERT</span> <span class="k">INTO</span> dbo.Revista (NumeroRegistro, Titulo, Periodicidad, Tipo) <span class="k">VALUES</span>
+(<span class="s">'REG-0001'</span>, <span class="s">'Mundo Ciencia'</span>,  <span class="s">'MENSUAL'</span>,   <span class="s">'CIENTIFICA'</span>),
+(<span class="s">'REG-0002'</span>, <span class="s">'Deporte Total'</span>,  <span class="s">'SEMANAL'</span>,   <span class="s">'DEPORTIVA'</span>),
+(<span class="s">'REG-0003'</span>, <span class="s">'Hogar y Jardin'</span>, <span class="s">'QUINCENAL'</span>, <span class="s">'DECORACION'</span>);
+<span class="k">GO</span>
+
+<span class="k">INSERT</span> <span class="k">INTO</span> dbo.SucursalRevista (CodigoSucursal, NumeroRegistro) <span class="k">VALUES</span>
+(1, <span class="s">'REG-0001'</span>),
+(1, <span class="s">'REG-0002'</span>),
+(2, <span class="s">'REG-0001'</span>),
+(2, <span class="s">'REG-0003'</span>),
+(3, <span class="s">'REG-0002'</span>);
+<span class="k">GO</span>
+
+<span class="k">INSERT</span> <span class="k">INTO</span> dbo.Periodista (NIF, Nombre, Apellidos, Telefono, Especialidad) <span class="k">VALUES</span>
+(<span class="s">'55555555E'</span>, <span class="s">'Carlos'</span>, <span class="s">'Romero Vega'</span>, <span class="s">'600555555'</span>, <span class="s">'Ciencia'</span>),
+(<span class="s">'66666666F'</span>, <span class="s">'Laura'</span>,  <span class="s">'Navarro Sola'</span>, <span class="s">'600666666'</span>, <span class="s">'Deportes'</span>),
+(<span class="s">'77777777G'</span>, <span class="s">'Elena'</span>,  <span class="s">'Mora Cruz'</span>,    <span class="k">NULL</span>,        <span class="s">'Decoracion'</span>);
+<span class="k">GO</span>
+
+<span class="k">INSERT</span> <span class="k">INTO</span> dbo.PeriodistaRevista (NIFPeriodista, NumeroRegistro) <span class="k">VALUES</span>
+(<span class="s">'55555555E'</span>, <span class="s">'REG-0001'</span>),
+(<span class="s">'66666666F'</span>, <span class="s">'REG-0001'</span>),
+(<span class="s">'66666666F'</span>, <span class="s">'REG-0002'</span>),
+(<span class="s">'77777777G'</span>, <span class="s">'REG-0003'</span>);
+<span class="k">GO</span>
+
+<span class="k">INSERT</span> <span class="k">INTO</span> dbo.SeccionRevista (NumeroRegistro, Titulo, ExtensionPaginas) <span class="k">VALUES</span>
+(<span class="s">'REG-0001'</span>, <span class="s">'Novedades cientificas'</span>,   6),
+(<span class="s">'REG-0001'</span>, <span class="s">'Entrevista del mes'</span>,      4),
+(<span class="s">'REG-0002'</span>, <span class="s">'Resultados de la semana'</span>, 8),
+(<span class="s">'REG-0003'</span>, <span class="s">'Trucos de jardineria'</span>,    5);
+<span class="k">GO</span>
+
+<span class="k">INSERT</span> <span class="k">INTO</span> dbo.Ejemplar (NumeroRegistro, FechaPublicacion, NumeroPaginas, EjemplaresVendidos) <span class="k">VALUES</span>
+(<span class="s">'REG-0001'</span>, <span class="s">'2026-01-01'</span>, 64, 1500),
+(<span class="s">'REG-0001'</span>, <span class="s">'2026-02-01'</span>, 64, 1720),
+(<span class="s">'REG-0002'</span>, <span class="s">'2026-01-07'</span>, 48, 3200),
+(<span class="s">'REG-0003'</span>, <span class="s">'2026-01-15'</span>, 52,  900);
+<span class="k">GO</span>
+
+
+<span class="c">-- =====================================================================</span>
+<span class="c">-- DATOS ADICIONALES DE PRUEBA: minimo 10 registros por tabla principal</span>
+<span class="c">-- =====================================================================</span>
+
+<span class="k">INSERT</span> <span class="k">INTO</span> dbo.Sucursal (Domicilio, Telefono) <span class="k">VALUES</span>
+(<span class="s">'Calle Alcalde 12, Madrid'</span>,<span class="s">'911010101'</span>),
+(<span class="s">'Avenida Andalucia 44, Malaga'</span>,<span class="s">'952020202'</span>),
+(<span class="s">'Calle Gran Via 55, Bilbao'</span>,<span class="s">'944030303'</span>),
+(<span class="s">'Avenida Libertad 18, Zaragoza'</span>,<span class="s">'976040404'</span>),
+(<span class="s">'Calle Central 27, Alicante'</span>,<span class="s">'965050505'</span>),
+(<span class="s">'Paseo Maritimo 9, Cadiz'</span>,<span class="s">'956060606'</span>),
+(<span class="s">'Calle Real 33, Granada'</span>,<span class="s">'958070707'</span>);
+<span class="k">GO</span>
+
+<span class="k">INSERT</span> <span class="k">INTO</span> dbo.Empleado (NIF, Nombre, Apellidos, Telefono, CodigoSucursal) <span class="k">VALUES</span>
+(<span class="s">'88888888H'</span>,<span class="s">'Raul'</span>,<span class="s">'Martin Gil'</span>,<span class="s">'600888888'</span>,4),
+(<span class="s">'99999999J'</span>,<span class="s">'Nuria'</span>,<span class="s">'Sanz Vega'</span>,<span class="s">'600999999'</span>,5),
+(<span class="s">'10101010K'</span>,<span class="s">'Diego'</span>,<span class="s">'Rios Paz'</span>,<span class="s">'601010101'</span>,6),
+(<span class="s">'12121212L'</span>,<span class="s">'Irene'</span>,<span class="s">'Mora Ruiz'</span>,<span class="s">'601212121'</span>,7),
+(<span class="s">'13131313M'</span>,<span class="s">'Sergio'</span>,<span class="s">'Vidal Leon'</span>,<span class="s">'601313131'</span>,1),
+(<span class="s">'14141414N'</span>,<span class="s">'Clara'</span>,<span class="s">'Rey Soto'</span>,<span class="s">'601414141'</span>,2);
+<span class="k">GO</span>
+
+<span class="k">INSERT</span> <span class="k">INTO</span> dbo.Revista (NumeroRegistro, Titulo, Periodicidad, Tipo) <span class="k">VALUES</span>
+(<span class="s">'REG-0004'</span>,<span class="s">'Tecnologia Hoy'</span>,<span class="s">'MENSUAL'</span>,<span class="s">'TECNOLOGIA'</span>),
+(<span class="s">'REG-0005'</span>,<span class="s">'Salud y Vida'</span>,<span class="s">'MENSUAL'</span>,<span class="s">'SALUD'</span>),
+(<span class="s">'REG-0006'</span>,<span class="s">'Viajes del Mundo'</span>,<span class="s">'TRIMESTRAL'</span>,<span class="s">'TURISMO'</span>),
+(<span class="s">'REG-0007'</span>,<span class="s">'Economia Actual'</span>,<span class="s">'SEMANAL'</span>,<span class="s">'ECONOMIA'</span>),
+(<span class="s">'REG-0008'</span>,<span class="s">'Cocina Creativa'</span>,<span class="s">'QUINCENAL'</span>,<span class="s">'GASTRONOMIA'</span>),
+(<span class="s">'REG-0009'</span>,<span class="s">'Historia Viva'</span>,<span class="s">'MENSUAL'</span>,<span class="s">'HISTORIA'</span>),
+(<span class="s">'REG-0010'</span>,<span class="s">'Cultura Digital'</span>,<span class="s">'BIMESTRAL'</span>,<span class="s">'CULTURA'</span>);
+<span class="k">GO</span>
+
+<span class="k">INSERT</span> <span class="k">INTO</span> dbo.SucursalRevista (CodigoSucursal, NumeroRegistro) <span class="k">VALUES</span>
+(1,<span class="s">'REG-0004'</span>),(2,<span class="s">'REG-0004'</span>),(3,<span class="s">'REG-0005'</span>),(4,<span class="s">'REG-0006'</span>),
+(5,<span class="s">'REG-0007'</span>),(6,<span class="s">'REG-0008'</span>),(7,<span class="s">'REG-0009'</span>),(1,<span class="s">'REG-0010'</span>),
+(4,<span class="s">'REG-0005'</span>),(6,<span class="s">'REG-0007'</span>);
+<span class="k">GO</span>
+
+<span class="k">INSERT</span> <span class="k">INTO</span> dbo.Periodista (NIF, Nombre, Apellidos, Telefono, Especialidad) <span class="k">VALUES</span>
+(<span class="s">'15151515P'</span>,<span class="s">'Mario'</span>,<span class="s">'Lopez Vega'</span>,<span class="s">'602151515'</span>,<span class="s">'Tecnologia'</span>),
+(<span class="s">'16161616Q'</span>,<span class="s">'Julia'</span>,<span class="s">'Perez Gil'</span>,<span class="s">'602161616'</span>,<span class="s">'Salud'</span>),
+(<span class="s">'17171717R'</span>,<span class="s">'Oscar'</span>,<span class="s">'Navarro Ruiz'</span>,<span class="s">'602171717'</span>,<span class="s">'Turismo'</span>),
+(<span class="s">'18181818S'</span>,<span class="s">'Beatriz'</span>,<span class="s">'Soto Cruz'</span>,<span class="s">'602181818'</span>,<span class="s">'Economia'</span>),
+(<span class="s">'19191919T'</span>,<span class="s">'Ivan'</span>,<span class="s">'Molina Paz'</span>,<span class="s">'602191919'</span>,<span class="s">'Gastronomia'</span>),
+(<span class="s">'20202020U'</span>,<span class="s">'Laura'</span>,<span class="s">'Ramos Diaz'</span>,<span class="s">'602202020'</span>,<span class="s">'Historia'</span>),
+(<span class="s">'21212121V'</span>,<span class="s">'Hector'</span>,<span class="s">'Vega Leon'</span>,<span class="s">'602212121'</span>,<span class="s">'Cultura'</span>);
+<span class="k">GO</span>
+
+<span class="k">INSERT</span> <span class="k">INTO</span> dbo.PeriodistaRevista (NIFPeriodista, NumeroRegistro) <span class="k">VALUES</span>
+(<span class="s">'15151515P'</span>,<span class="s">'REG-0004'</span>),(<span class="s">'16161616Q'</span>,<span class="s">'REG-0005'</span>),(<span class="s">'17171717R'</span>,<span class="s">'REG-0006'</span>),
+(<span class="s">'18181818S'</span>,<span class="s">'REG-0007'</span>),(<span class="s">'19191919T'</span>,<span class="s">'REG-0008'</span>),(<span class="s">'20202020U'</span>,<span class="s">'REG-0009'</span>),
+(<span class="s">'21212121V'</span>,<span class="s">'REG-0010'</span>),(<span class="s">'55555555E'</span>,<span class="s">'REG-0004'</span>),(<span class="s">'66666666F'</span>,<span class="s">'REG-0007'</span>);
+<span class="k">GO</span>
+
+<span class="k">INSERT</span> <span class="k">INTO</span> dbo.SeccionRevista (NumeroRegistro, Titulo, ExtensionPaginas) <span class="k">VALUES</span>
+(<span class="s">'REG-0004'</span>,<span class="s">'Innovacion'</span>,7),(<span class="s">'REG-0005'</span>,<span class="s">'Bienestar'</span>,6),(<span class="s">'REG-0006'</span>,<span class="s">'Destinos'</span>,8),
+(<span class="s">'REG-0007'</span>,<span class="s">'Mercados'</span>,5),(<span class="s">'REG-0008'</span>,<span class="s">'Recetas'</span>,10),(<span class="s">'REG-0009'</span>,<span class="s">'Archivo'</span>,6),
+(<span class="s">'REG-0010'</span>,<span class="s">'Tecnologia educativa'</span>,7),(<span class="s">'REG-0004'</span>,<span class="s">'Analisis'</span>,5),(<span class="s">'REG-0005'</span>,<span class="s">'Entrevista'</span>,4);
+<span class="k">GO</span>
+
+<span class="k">INSERT</span> <span class="k">INTO</span> dbo.Ejemplar (NumeroRegistro, FechaPublicacion, NumeroPaginas, EjemplaresVendidos) <span class="k">VALUES</span>
+(<span class="s">'REG-0004'</span>,<span class="s">'2026-03-01'</span>,60,2100),(<span class="s">'REG-0005'</span>,<span class="s">'2026-03-05'</span>,56,1800),
+(<span class="s">'REG-0006'</span>,<span class="s">'2026-03-10'</span>,72,1300),(<span class="s">'REG-0007'</span>,<span class="s">'2026-03-14'</span>,48,2600),
+(<span class="s">'REG-0008'</span>,<span class="s">'2026-03-20'</span>,64,1950),(<span class="s">'REG-0009'</span>,<span class="s">'2026-04-01'</span>,68,1450),
+(<span class="s">'REG-0010'</span>,<span class="s">'2026-04-05'</span>,52,1200),(<span class="s">'REG-0004'</span>,<span class="s">'2026-04-01'</span>,62,2250),
+(<span class="s">'REG-0005'</span>,<span class="s">'2026-04-05'</span>,58,1900),(<span class="s">'REG-0007'</span>,<span class="s">'2026-03-21'</span>,50,2750);
+<span class="k">GO</span>
+
+<span class="c">-- =====================================================================</span>
+<span class="c">-- CONSULTAS DE COMPROBACION</span>
+<span class="c">-- =====================================================================</span>
+
+<span class="c">-- Revistas que publica cada sucursal</span>
+<span class="k">SELECT</span> s.CodigoSucursal, s.Domicilio, r.Titulo <span class="k">AS</span> Revista
+<span class="k">FROM</span> dbo.Sucursal s
+<span class="k">JOIN</span> dbo.SucursalRevista sr <span class="k">ON</span> sr.CodigoSucursal = s.CodigoSucursal
+<span class="k">JOIN</span> dbo.Revista r          <span class="k">ON</span> r.NumeroRegistro = sr.NumeroRegistro
+<span class="k">ORDER</span> <span class="k">BY</span> s.CodigoSucursal, r.Titulo;
+<span class="k">GO</span>
+
+<span class="c">-- Ejemplares de cada revista</span>
+<span class="k">SELECT</span> r.Titulo <span class="k">AS</span> Revista, e.FechaPublicacion, e.NumeroPaginas, e.EjemplaresVendidos
+<span class="k">FROM</span> dbo.Revista r
+<span class="k">JOIN</span> dbo.Ejemplar e <span class="k">ON</span> e.NumeroRegistro = r.NumeroRegistro
+<span class="k">ORDER</span> <span class="k">BY</span> r.Titulo, e.FechaPublicacion;
+<span class="k">GO</span>
+
+<span class="k">PRINT</span> <span class="s">'BASE DE DATOS CadenaEditorial CREADA CORRECTAMENTE.'</span>;
+<span class="k">GO</span>
+</pre></div></body></html>

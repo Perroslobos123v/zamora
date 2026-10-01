@@ -1,0 +1,1751 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GradosTitulos_corregido.sql · Portafolio Base de Datos II</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant Garamond:wght@600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#020711;color:#d6e4ec;font-family:Segoe UI,Arial,sans-serif}
+.wrap{max-width:1100px;margin:auto;padding:36px 5vw 70px}
+.bar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:20px}
+.btn{display:inline-block;color:#9be8ff;text-decoration:none;border:1px solid rgba(53,207,255,.35);border-radius:8px;padding:9px 13px;background:rgba(53,207,255,.05);font:inherit;cursor:pointer}
+.btn:hover{background:rgba(53,207,255,.15)}
+h1{font-family:Cormorant Garamond,serif;color:#ffe18a;font-size:22px;margin:0 0 6px;word-break:break-all}
+p{color:#9eb2c0;margin:0 0 18px}
+pre{margin:0;padding:22px;overflow:auto;border:1px solid rgba(53,207,255,.22);border-radius:12px;background:#07121f;font:14px/1.6 Consolas,Menlo,monospace;color:#cfe8f5;tab-size:4}
+.k{color:#35cfff;font-weight:600}.c{color:#6f8a99;font-style:italic}.s{color:#ffe18a}
+</style></head><body><div class="wrap">
+<div class="bar"><a class="btn" href="javascript:history.back()">← Volver</a>
+<a class="btn" href="GradosTitulos_corregido.sql" download>⬇ Descargar .sql</a>
+<button class="btn" onclick="navigator.clipboard.writeText(document.getElementById('code').innerText).then(()=>this.textContent='✔ Copiado')">Copiar código</button></div>
+<h1>GradosTitulos_corregido.sql</h1><p>Script T-SQL (SQL Server) mostrado en HTML.</p>
+<pre id="code"><span class="c">-- =====================================================================</span>
+<span class="c">-- BASE DE DATOS: UPLA - GRADOS Y TITULOS DE PREGRADO</span>
+<span class="c">-- Normalizacion 3FN - Reglamento General de Grados y Titulos</span>
+<span class="c">-- Motor: SQL Server 2021</span>
+<span class="c">-- Autor: Ing. Raul Fernandez Bejarano</span>
+<span class="c">-- Fecha: 09/08/2026</span>
+<span class="c">-- Transcrito desde CODIGOS.docx (capturas de pantalla) para Yuber</span>
+<span class="c">-- =====================================================================</span>
+
+<span class="k">USE</span> master;
+<span class="k">GO</span>
+
+<span class="k">IF</span> EXISTS (<span class="k">SELECT</span> name <span class="k">FROM</span> sys.databases <span class="k">WHERE</span> name = N<span class="s">'GradosTitulos'</span>)
+<span class="k">BEGIN</span>
+    <span class="k">ALTER</span> <span class="k">DATABASE</span> GradosTitulos <span class="k">SET</span> SINGLE_USER <span class="k">WITH</span> <span class="k">ROLLBACK</span> <span class="k">IMMEDIATE</span>;
+    <span class="k">DROP</span> <span class="k">DATABASE</span> GradosTitulos;
+<span class="k">END</span>
+<span class="k">GO</span>
+
+<span class="c">-- CORRECCION: los archivos se crean en las carpetas por defecto de SQL Server,</span>
+<span class="c">-- asi no hace falta que exista la carpeta D:\BaseDatos2026.</span>
+<span class="k">DECLARE</span> @RutaDatos <span class="k">NVARCHAR</span>(260) = CONVERT(<span class="k">NVARCHAR</span>(260), SERVERPROPERTY(<span class="s">'InstanceDefaultDataPath'</span>));
+<span class="k">DECLARE</span> @RutaLog   <span class="k">NVARCHAR</span>(260) = CONVERT(<span class="k">NVARCHAR</span>(260), SERVERPROPERTY(<span class="s">'InstanceDefaultLogPath'</span>));
+<span class="k">DECLARE</span> @Sql       <span class="k">NVARCHAR</span>(MAX);
+
+<span class="k">SET</span> @Sql = N'
+<span class="k">CREATE</span> <span class="k">DATABASE</span> GradosTitulos
+<span class="k">ON</span> <span class="k">PRIMARY</span> (
+    NAME = GradosTitulos_Data,
+    FILENAME = <span class="s">''' + @RutaDatos + N'</span>GradosTitulos_data.mdf<span class="s">''</span>,
+    SIZE = 20MB,
+    MAXSIZE = 20GB,
+    FILEGROWTH = 5MB
+)
+LOG <span class="k">ON</span> (
+    NAME = GradosTitulos_Log,
+    FILENAME = <span class="s">''' + @RutaLog + N'</span>GradosTitulos_log.ldf<span class="s">''</span>,
+    SIZE = 6MB,
+    MAXSIZE = 2GB,
+    FILEGROWTH = 2MB
+);';
+
+EXEC sys.sp_executesql @Sql;
+<span class="k">GO</span>
+
+<span class="c">-- =====================================================================</span>
+<span class="c">-- ARQUITECTURA GENERAL: la base de datos se divide en seis esquemas</span>
+<span class="c">-- GradosTitulos</span>
+<span class="c">--  |- Catalogo</span>
+<span class="c">--  |- Academico</span>
+<span class="c">--  |- Tramite</span>
+<span class="c">--  |- Evaluacion</span>
+<span class="c">--  |- Documento</span>
+<span class="c">--  |- Seguridad</span>
+<span class="c">-- Los primeros cinco esquemas corresponden al negocio de Grados y</span>
+<span class="c">-- Titulos; Seguridad concentra el control de acceso y seguridad</span>
+<span class="c">-- corporativa.</span>
+<span class="c">-- =====================================================================</span>
+
+<span class="k">USE</span> GradosTitulos;
+<span class="k">GO</span>
+
+<span class="c">-- =====================================================================</span>
+<span class="c">-- 2. CREAR ESQUEMAS</span>
+<span class="c">-- =====================================================================</span>
+<span class="k">CREATE</span> SCHEMA Catalogo;   -- Tablas de parametros y catalogos
+<span class="k">GO</span>
+<span class="k">CREATE</span> SCHEMA Academico;  -- Entidades academicas principales
+<span class="k">GO</span>
+<span class="k">CREATE</span> SCHEMA Tramite;    -- Proceso administrativo
+<span class="k">GO</span>
+<span class="k">CREATE</span> SCHEMA Evaluacion; -- Evaluaciones y sustentacion
+<span class="k">GO</span>
+<span class="k">CREATE</span> SCHEMA Documento;  -- Resoluciones, diplomas y documentos
+<span class="k">GO</span>
+<span class="k">CREATE</span> SCHEMA Seguridad;  -- Usuarios, roles y permisos (RBAC)
+<span class="k">GO</span>
+
+<span class="c">-- =====================================================================</span>
+<span class="c">-- 3. TABLAS DE CATALOGO</span>
+<span class="c">-- =====================================================================</span>
+
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="c">-- T01: TIPO_TRAMITE</span>
+<span class="c">-- Catalogo de tipos de tramite disponibles</span>
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="k">CREATE</span> <span class="k">TABLE</span> Catalogo.TipoTramite (
+    IdTipoTramite       <span class="k">TINYINT</span>        <span class="k">NOT</span> <span class="k">NULL</span>,
+    Descripcion         <span class="k">VARCHAR</span>(60)    <span class="k">NOT</span> <span class="k">NULL</span>,
+    RequiereTesis       <span class="k">BIT</span>            <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 0,
+    RequiereSuficiencia <span class="k">BIT</span>            <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 0,
+    RequiereBachiller   <span class="k">BIT</span>            <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 0, -- prerrequisito obligatorio
+    Activo              <span class="k">BIT</span>            <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 1,
+
+    <span class="k">CONSTRAINT</span> PK_TipoTramite <span class="k">PRIMARY</span> <span class="k">KEY</span> (IdTipoTramite),
+    <span class="k">CONSTRAINT</span> UQ_TipoTramite_Descripcion <span class="k">UNIQUE</span> (Descripcion)
+);
+<span class="k">GO</span>
+
+<span class="k">INSERT</span> <span class="k">INTO</span> Catalogo.TipoTramite <span class="k">VALUES</span>
+(1, <span class="s">'BACHILLER'</span>,                 0, 0, 0, 1),
+(2, <span class="s">'TITULO_TESIS_INDIVIDUAL'</span>,   1, 0, 1, 1),
+(3, <span class="s">'TITULO_TESIS_GRUPAL'</span>,       1, 0, 1, 1),
+(4, <span class="s">'TITULO_SUFICIENCIA_PROF'</span>,   0, 1, 1, 1);
+<span class="k">GO</span>
+
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="c">-- T02: ESTADO_TRAMITE</span>
+<span class="c">-- Catalogo de estados del flujo administrativo</span>
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="k">CREATE</span> <span class="k">TABLE</span> Catalogo.EstadoTramite (
+    IdEstadoTramite <span class="k">TINYINT</span>      <span class="k">NOT</span> <span class="k">NULL</span>,
+    Descripcion     <span class="k">VARCHAR</span>(40)  <span class="k">NOT</span> <span class="k">NULL</span>,
+    EsTerminal      <span class="k">BIT</span>          <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 0, -- estado final del flujo
+
+    <span class="k">CONSTRAINT</span> PK_EstadoTramite <span class="k">PRIMARY</span> <span class="k">KEY</span> (IdEstadoTramite),
+    <span class="k">CONSTRAINT</span> UQ_EstadoTramite_Descripcion <span class="k">UNIQUE</span> (Descripcion)
+);
+<span class="k">GO</span>
+
+<span class="k">INSERT</span> <span class="k">INTO</span> Catalogo.EstadoTramite <span class="k">VALUES</span>
+(1, <span class="s">'INICIADO'</span>,        0),
+(2, <span class="s">'EN_VERIFICACION'</span>, 0),
+(3, <span class="s">'EN_PROCESO'</span>,      0),
+(4, <span class="s">'OBSERVADO'</span>,       0),
+(5, <span class="s">'APROBADO'</span>,        1),
+(6, <span class="s">'IMPROCEDENTE'</span>,    1),
+(7, <span class="s">'ARCHIVADO'</span>,       1),
+(8, <span class="s">'SUSPENDIDO'</span>,      0);
+<span class="k">GO</span>
+
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="c">-- T03: LINEA_INVESTIGACION</span>
+<span class="c">-- Lineas de investigacion institucionales aprobadas</span>
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="k">CREATE</span> <span class="k">TABLE</span> Catalogo.LineaInvestigacion (
+    IdLinea               <span class="k">SMALLINT</span>      <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">IDENTITY</span>(1,1),
+    NombreLinea            <span class="k">VARCHAR</span>(200)  <span class="k">NOT</span> <span class="k">NULL</span>,
+    ResolucionAprobacion   <span class="k">VARCHAR</span>(40)   <span class="k">NULL</span>,  -- Ej: Res. 1069-2019-CU-VRINV
+    FechaAprobacion        <span class="k">DATE</span>          <span class="k">NULL</span>,
+    Activo                 <span class="k">BIT</span>           <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 1,
+
+    <span class="k">CONSTRAINT</span> PK_LineaInvestigacion <span class="k">PRIMARY</span> <span class="k">KEY</span> (IdLinea),
+    <span class="k">CONSTRAINT</span> UQ_LineaInvestigacion_Nombre <span class="k">UNIQUE</span> (NombreLinea)
+);
+<span class="k">GO</span>
+
+<span class="c">-- =====================================================================</span>
+<span class="c">-- 4. TABLAS DE ESTRUCTURA ACADEMICA</span>
+<span class="c">-- =====================================================================</span>
+
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="c">-- T04: FACULTAD</span>
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="k">CREATE</span> <span class="k">TABLE</span> Academico.Facultad (
+    IdFacultad      <span class="k">TINYINT</span>       <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">IDENTITY</span>(1,1),
+    NombreFacultad  <span class="k">VARCHAR</span>(100)  <span class="k">NOT</span> <span class="k">NULL</span>,
+    NombreDecano    <span class="k">VARCHAR</span>(150)  <span class="k">NULL</span>,
+    Activo          <span class="k">BIT</span>           <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 1,
+
+    <span class="k">CONSTRAINT</span> PK_Facultad <span class="k">PRIMARY</span> <span class="k">KEY</span> (IdFacultad),
+    <span class="k">CONSTRAINT</span> UQ_Facultad_Nombre <span class="k">UNIQUE</span> (NombreFacultad)
+);
+<span class="k">GO</span>
+
+<span class="k">INSERT</span> <span class="k">INTO</span> Academico.Facultad (NombreFacultad) <span class="k">VALUES</span>
+(<span class="s">'Ciencias Administrativas y Contables'</span>),
+(<span class="s">'Derecho y Ciencias Politicas'</span>),
+(<span class="s">'Ingenieria'</span>),
+(<span class="s">'Ciencias de la Salud'</span>),
+(<span class="s">'Educacion y Ciencias Humanas'</span>),
+(<span class="s">'Medicina Humana'</span>);
+<span class="k">GO</span>
+
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="c">-- T05: PROGRAMA_ESTUDIOS</span>
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="k">CREATE</span> <span class="k">TABLE</span> Academico.ProgramaEstudios (
+    IdPrograma      <span class="k">SMALLINT</span>      <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">IDENTITY</span>(1,1),
+    IdFacultad      <span class="k">TINYINT</span>       <span class="k">NOT</span> <span class="k">NULL</span>,
+    NombrePrograma  <span class="k">VARCHAR</span>(150)  <span class="k">NOT</span> <span class="k">NULL</span>,
+    NumSemestres    <span class="k">TINYINT</span>       <span class="k">NOT</span> <span class="k">NULL</span>, -- 10, 12 o 14
+    Modalidad       <span class="k">VARCHAR</span>(15)   <span class="k">NOT</span> <span class="k">NULL</span>, -- PRESENCIAL, SEMIPRESENCIAL
+    Activo          <span class="k">BIT</span>           <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 1,
+
+    <span class="k">CONSTRAINT</span> PK_ProgramaEstudios <span class="k">PRIMARY</span> <span class="k">KEY</span> (IdPrograma),
+    <span class="k">CONSTRAINT</span> FK_Programa_Facultad
+        <span class="k">FOREIGN</span> <span class="k">KEY</span> (IdFacultad) <span class="k">REFERENCES</span> Academico.Facultad(IdFacultad),
+    <span class="k">CONSTRAINT</span> CHK_Programa_Semestres
+        <span class="k">CHECK</span> (NumSemestres IN (10, 12, 14)),
+    <span class="k">CONSTRAINT</span> CHK_Programa_Modalidad
+        <span class="k">CHECK</span> (Modalidad IN (<span class="s">'PRESENCIAL'</span>, <span class="s">'SEMIPRESENCIAL'</span>)),
+    <span class="k">CONSTRAINT</span> UQ_Programa_Nombre_Modalidad
+        <span class="k">UNIQUE</span> (NombrePrograma, Modalidad)
+);
+<span class="k">GO</span>
+
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="c">-- T06: GRADO_TITULO_CATALOGO</span>
+<span class="c">-- Denominaciones oficiales de grado y titulo por programa</span>
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="k">CREATE</span> <span class="k">TABLE</span> Academico.GradoTituloCatalogo (
+    IdGradoTitulo       <span class="k">SMALLINT</span>      <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">IDENTITY</span>(1,1),
+    IdPrograma          <span class="k">SMALLINT</span>      <span class="k">NOT</span> <span class="k">NULL</span>,
+    DenominacionGrado   <span class="k">VARCHAR</span>(150)  <span class="k">NOT</span> <span class="k">NULL</span>,
+    DenominacionTitulo  <span class="k">VARCHAR</span>(150)  <span class="k">NOT</span> <span class="k">NULL</span>,
+    Activo              <span class="k">BIT</span>           <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 1,
+
+    <span class="k">CONSTRAINT</span> PK_GradoTituloCatalogo <span class="k">PRIMARY</span> <span class="k">KEY</span> (IdGradoTitulo),
+    <span class="k">CONSTRAINT</span> FK_GradoTitulo_Programa
+        <span class="k">FOREIGN</span> <span class="k">KEY</span> (IdPrograma) <span class="k">REFERENCES</span> Academico.ProgramaEstudios(IdPrograma)
+);
+<span class="k">GO</span>
+
+<span class="c">-- =====================================================================</span>
+<span class="c">-- 5. TABLAS DE PERSONAS Y ROLES</span>
+<span class="c">-- =====================================================================</span>
+
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="c">-- T07: PERSONA</span>
+<span class="c">-- Base comun para estudiantes y docentes</span>
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="k">CREATE</span> <span class="k">TABLE</span> Academico.Persona (
+    IdPersona         <span class="k">INT</span>           <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">IDENTITY</span>(1,1),
+    DNI               <span class="k">CHAR</span>(8)       <span class="k">NOT</span> <span class="k">NULL</span>,
+    Nombres           <span class="k">VARCHAR</span>(80)   <span class="k">NOT</span> <span class="k">NULL</span>,
+    ApellidoPaterno   <span class="k">VARCHAR</span>(60)   <span class="k">NOT</span> <span class="k">NULL</span>,
+    ApellidoMaterno   <span class="k">VARCHAR</span>(60)   <span class="k">NULL</span>,
+    Correo            <span class="k">VARCHAR</span>(120)  <span class="k">NULL</span>,
+    Telefono          <span class="k">VARCHAR</span>(15)   <span class="k">NULL</span>,
+    TipoPersona       <span class="k">VARCHAR</span>(15)   <span class="k">NOT</span> <span class="k">NULL</span>, -- ESTUDIANTE, DOCENTE
+    FechaRegistro     DATETIME2     <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> SYSDATETIME(),
+
+    <span class="k">CONSTRAINT</span> PK_Persona <span class="k">PRIMARY</span> <span class="k">KEY</span> (IdPersona),
+    <span class="k">CONSTRAINT</span> UQ_Persona_DNI <span class="k">UNIQUE</span> (DNI),
+    <span class="k">CONSTRAINT</span> CHK_Persona_DNI <span class="k">CHECK</span> (DNI LIKE <span class="s">'[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]'</span>),
+    <span class="k">CONSTRAINT</span> CHK_Persona_Tipo <span class="k">CHECK</span> (TipoPersona IN (<span class="s">'ESTUDIANTE'</span>, <span class="s">'DOCENTE'</span>))
+);
+<span class="k">GO</span>
+
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="c">-- T08: DOCENTE</span>
+<span class="c">-- Especializacion de Persona para asesores y jurados</span>
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="k">CREATE</span> <span class="k">TABLE</span> Academico.Docente (
+    IdDocente       <span class="k">INT</span>           <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">IDENTITY</span>(1,1),
+    IdPersona       <span class="k">INT</span>           <span class="k">NOT</span> <span class="k">NULL</span>,
+    GradoAcademico  <span class="k">VARCHAR</span>(10)   <span class="k">NOT</span> <span class="k">NULL</span>, -- MAESTRO, DOCTOR
+    CodigoORCID     <span class="k">VARCHAR</span>(25)   <span class="k">NULL</span>,
+    TipoContrato    <span class="k">VARCHAR</span>(12)   <span class="k">NOT</span> <span class="k">NULL</span>, -- ORDINARIO, CONTRATADO
+    IdFacultad      <span class="k">TINYINT</span>       <span class="k">NOT</span> <span class="k">NULL</span>,
+    EstadoActivo    <span class="k">BIT</span>           <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 1,
+
+    <span class="k">CONSTRAINT</span> PK_Docente <span class="k">PRIMARY</span> <span class="k">KEY</span> (IdDocente),
+    <span class="k">CONSTRAINT</span> UQ_Docente_Persona <span class="k">UNIQUE</span> (IdPersona),
+    <span class="k">CONSTRAINT</span> FK_Docente_Persona
+        <span class="k">FOREIGN</span> <span class="k">KEY</span> (IdPersona) <span class="k">REFERENCES</span> Academico.Persona(IdPersona),
+    <span class="k">CONSTRAINT</span> FK_Docente_Facultad
+        <span class="k">FOREIGN</span> <span class="k">KEY</span> (IdFacultad) <span class="k">REFERENCES</span> Academico.Facultad(IdFacultad),
+    <span class="k">CONSTRAINT</span> CHK_Docente_Grado
+        <span class="k">CHECK</span> (GradoAcademico IN (<span class="s">'MAESTRO'</span>, <span class="s">'DOCTOR'</span>)),
+    <span class="k">CONSTRAINT</span> CHK_Docente_Contrato
+        <span class="k">CHECK</span> (TipoContrato IN (<span class="s">'ORDINARIO'</span>, <span class="s">'CONTRATADO'</span>))
+);
+<span class="k">GO</span>
+
+<span class="c">-- =====================================================================</span>
+<span class="c">-- 6. TABLAS DE COORDINACION</span>
+<span class="c">-- =====================================================================</span>
+
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="c">-- T09: COORDINACION_GT</span>
+<span class="c">-- Coordinacion de Grados y Titulos por facultad</span>
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="k">CREATE</span> <span class="k">TABLE</span> Tramite.CoordinacionGT (
+    IdCoordinacion    <span class="k">TINYINT</span>       <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">IDENTITY</span>(1,1),
+    IdFacultad        <span class="k">TINYINT</span>       <span class="k">NOT</span> <span class="k">NULL</span>,
+    NombreCoordinador <span class="k">VARCHAR</span>(150)  <span class="k">NULL</span>,
+    FechaCreacion     <span class="k">DATE</span>          <span class="k">NULL</span>,
+    Activo            <span class="k">BIT</span>           <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 1,
+
+    <span class="k">CONSTRAINT</span> PK_CoordinacionGT <span class="k">PRIMARY</span> <span class="k">KEY</span> (IdCoordinacion),
+    <span class="k">CONSTRAINT</span> FK_CoordGT_Facultad
+        <span class="k">FOREIGN</span> <span class="k">KEY</span> (IdFacultad) <span class="k">REFERENCES</span> Academico.Facultad(IdFacultad)
+);
+<span class="k">GO</span>
+
+<span class="c">-- =====================================================================</span>
+<span class="c">-- 7. TABLAS DEL PROCESO DE MATRICULA Y TRAMITE</span>
+<span class="c">-- =====================================================================</span>
+
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="c">-- T10: MATRICULA</span>
+<span class="c">-- Vinculo estudiante-programa, condicion de egresado</span>
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="k">CREATE</span> <span class="k">TABLE</span> Academico.Matricula (
+    IdMatricula          <span class="k">INT</span>        <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">IDENTITY</span>(1,1),
+    IdEstudiante         <span class="k">INT</span>        <span class="k">NOT</span> <span class="k">NULL</span>,
+    IdPrograma           <span class="k">SMALLINT</span>   <span class="k">NOT</span> <span class="k">NULL</span>,
+    FechaMatricula       <span class="k">DATE</span>       <span class="k">NOT</span> <span class="k">NULL</span>,
+    CreditosAprobados    <span class="k">SMALLINT</span>   <span class="k">NULL</span>,
+    AsignaturasAprobadas <span class="k">BIT</span>        <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 0,
+    PracticasCompletadas <span class="k">BIT</span>        <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 0,
+    IdiomaAprobado       <span class="k">BIT</span>        <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 0,
+    ProyeccionSocial     <span class="k">BIT</span>        <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 0,
+    TieneDeuda           <span class="k">BIT</span>        <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 0,
+    FechaEgreso          <span class="k">DATE</span>       <span class="k">NULL</span>,
+
+    <span class="k">CONSTRAINT</span> PK_Matricula <span class="k">PRIMARY</span> <span class="k">KEY</span> (IdMatricula),
+    <span class="k">CONSTRAINT</span> FK_Matricula_Estudiante
+        <span class="k">FOREIGN</span> <span class="k">KEY</span> (IdEstudiante) <span class="k">REFERENCES</span> Academico.Persona(IdPersona),
+    <span class="k">CONSTRAINT</span> FK_Matricula_Programa
+        <span class="k">FOREIGN</span> <span class="k">KEY</span> (IdPrograma) <span class="k">REFERENCES</span> Academico.ProgramaEstudios(IdPrograma)
+);
+<span class="k">GO</span>
+
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="c">-- T11: TRAMITE</span>
+<span class="c">-- Proceso administrativo principal</span>
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="k">CREATE</span> <span class="k">TABLE</span> Tramite.Tramite (
+    IdTramite        <span class="k">INT</span>           <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">IDENTITY</span>(1,1),
+    IdMatricula      <span class="k">INT</span>           <span class="k">NOT</span> <span class="k">NULL</span>,
+    IdTipoTramite    <span class="k">TINYINT</span>       <span class="k">NOT</span> <span class="k">NULL</span>,
+    IdEstadoTramite  <span class="k">TINYINT</span>       <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 1,
+    IdCoordinacion   <span class="k">TINYINT</span>       <span class="k">NOT</span> <span class="k">NULL</span>,
+    FechaInicio      <span class="k">DATE</span>          <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> CAST(SYSDATETIME() <span class="k">AS</span> <span class="k">DATE</span>),
+    FechaUltMod      DATETIME2     <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> SYSDATETIME(),
+    Observaciones    <span class="k">VARCHAR</span>(500)  <span class="k">NULL</span>,
+
+    <span class="k">CONSTRAINT</span> PK_Tramite <span class="k">PRIMARY</span> <span class="k">KEY</span> (IdTramite),
+    <span class="k">CONSTRAINT</span> FK_Tramite_Matricula
+        <span class="k">FOREIGN</span> <span class="k">KEY</span> (IdMatricula) <span class="k">REFERENCES</span> Academico.Matricula(IdMatricula),
+    <span class="k">CONSTRAINT</span> FK_Tramite_TipoTramite
+        <span class="k">FOREIGN</span> <span class="k">KEY</span> (IdTipoTramite) <span class="k">REFERENCES</span> Catalogo.TipoTramite(IdTipoTramite),
+    <span class="k">CONSTRAINT</span> FK_Tramite_EstadoTramite
+        <span class="k">FOREIGN</span> <span class="k">KEY</span> (IdEstadoTramite) <span class="k">REFERENCES</span> Catalogo.EstadoTramite(IdEstadoTramite),
+    <span class="k">CONSTRAINT</span> FK_Tramite_Coordinacion
+        <span class="k">FOREIGN</span> <span class="k">KEY</span> (IdCoordinacion) <span class="k">REFERENCES</span> Tramite.CoordinacionGT(IdCoordinacion)
+);
+<span class="k">GO</span>
+
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="c">-- T12: PAGO</span>
+<span class="c">-- Pagos asociados al tramite (Art. 23, 49)</span>
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="k">CREATE</span> <span class="k">TABLE</span> Tramite.Pago (
+    IdPago       <span class="k">INT</span>             <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">IDENTITY</span>(1,1),
+    IdTramite    <span class="k">INT</span>             <span class="k">NOT</span> <span class="k">NULL</span>,
+    TipoPago     <span class="k">VARCHAR</span>(25)     <span class="k">NOT</span> <span class="k">NULL</span>,
+<span class="c">    -- BACHILLER, TESIS_5PCT, TESIS_40PCT, TESIS_TOTAL,</span>
+<span class="c">    -- AMPLIACION, CAMBIO_TITULO, POSTERGACION, NUEVO_PLAN</span>
+    Monto        <span class="k">DECIMAL</span>(10,2)   <span class="k">NOT</span> <span class="k">NULL</span>,
+    Porcentaje   <span class="k">DECIMAL</span>(5,2)    <span class="k">NULL</span>,  -- 5.00, 40.00, 100.00
+    FechaPago    <span class="k">DATE</span>            <span class="k">NOT</span> <span class="k">NULL</span>,
+    NroRecibo    <span class="k">VARCHAR</span>(30)     <span class="k">NULL</span>,
+
+    <span class="k">CONSTRAINT</span> PK_Pago <span class="k">PRIMARY</span> <span class="k">KEY</span> (IdPago),
+    <span class="k">CONSTRAINT</span> FK_Pago_Tramite
+        <span class="k">FOREIGN</span> <span class="k">KEY</span> (IdTramite) <span class="k">REFERENCES</span> Tramite.Tramite(IdTramite),
+    <span class="k">CONSTRAINT</span> CHK_Pago_Monto <span class="k">CHECK</span> (Monto &gt; 0),
+    <span class="k">CONSTRAINT</span> CHK_Pago_Tipo <span class="k">CHECK</span> (TipoPago IN (
+        <span class="s">'BACHILLER'</span>, <span class="s">'TESIS_5PCT'</span>, <span class="s">'TESIS_40PCT'</span>, <span class="s">'TESIS_TOTAL'</span>,
+        <span class="s">'AMPLIACION'</span>, <span class="s">'CAMBIO_TITULO'</span>, <span class="s">'POSTERGACION'</span>, <span class="s">'NUEVO_PLAN'</span>,
+        <span class="s">'SUFICIENCIA_40PCT'</span>, <span class="s">'SUFICIENCIA_TOTAL'</span>
+    ))
+);
+<span class="k">GO</span>
+
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="c">-- T13: FOTOGRAFIA</span>
+<span class="c">-- Datos de la fotografia requerida en el tramite (Art. 15)</span>
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="k">CREATE</span> <span class="k">TABLE</span> Tramite.Fotografia (
+    IdFoto           <span class="k">INT</span>           <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">IDENTITY</span>(1,1),
+    IdTramite        <span class="k">INT</span>           <span class="k">NOT</span> <span class="k">NULL</span>,
+    Formato          <span class="k">VARCHAR</span>(5)    <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> <span class="s">'JPG'</span>,
+    TamanioKB        <span class="k">SMALLINT</span>      <span class="k">NOT</span> <span class="k">NULL</span>, -- max 70 KB
+    ResolucionPPP    <span class="k">SMALLINT</span>      <span class="k">NOT</span> <span class="k">NULL</span>, -- max 300 ppp
+    Dimensiones      <span class="k">VARCHAR</span>(15)   <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> <span class="s">'35x43mm'</span>,
+    RutaArchivo      <span class="k">VARCHAR</span>(300)  <span class="k">NULL</span>,
+    FechaCarga       DATETIME2     <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> SYSDATETIME(),
+
+    <span class="k">CONSTRAINT</span> PK_Fotografia <span class="k">PRIMARY</span> <span class="k">KEY</span> (IdFoto),
+    <span class="k">CONSTRAINT</span> FK_Foto_Tramite
+        <span class="k">FOREIGN</span> <span class="k">KEY</span> (IdTramite) <span class="k">REFERENCES</span> Tramite.Tramite(IdTramite),
+    <span class="k">CONSTRAINT</span> CHK_Foto_Formato <span class="k">CHECK</span> (Formato IN (<span class="s">'JPG'</span>, <span class="s">'JPEG'</span>)),
+    <span class="k">CONSTRAINT</span> CHK_Foto_Tamanio <span class="k">CHECK</span> (TamanioKB BETWEEN 1 AND 70),
+    <span class="k">CONSTRAINT</span> CHK_Foto_Resolucion <span class="k">CHECK</span> (ResolucionPPP BETWEEN 72 AND 300)
+);
+<span class="k">GO</span>
+
+<span class="c">-- =====================================================================</span>
+<span class="c">-- 8. TABLAS DEL TRABAJO DE INVESTIGACION</span>
+<span class="c">-- =====================================================================</span>
+
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="c">-- T14: TRABAJO_INVESTIGACION</span>
+<span class="c">-- Tesis o Trabajo de Suficiencia Profesional (Art. 31, 47)</span>
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="k">CREATE</span> <span class="k">TABLE</span> Tramite.TrabajoInvestigacion (
+    IdTrabajo             <span class="k">INT</span>             <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">IDENTITY</span>(1,1),
+    IdTramite             <span class="k">INT</span>             <span class="k">NOT</span> <span class="k">NULL</span>,
+    IdLinea               <span class="k">SMALLINT</span>        <span class="k">NOT</span> <span class="k">NULL</span>,
+    TipoTrabajo           <span class="k">VARCHAR</span>(25)     <span class="k">NOT</span> <span class="k">NULL</span>,
+<span class="c">    -- TESIS_CUANTITATIVA, TESIS_CUALITATIVA,</span>
+<span class="c">    -- TESIS_MIXTA, SUFICIENCIA_PROFESIONAL</span>
+    Titulo                <span class="k">NVARCHAR</span>(400)   <span class="k">NOT</span> <span class="k">NULL</span>,
+    FechaInicio           <span class="k">DATE</span>            <span class="k">NOT</span> <span class="k">NULL</span>,
+    FechaFin              <span class="k">DATE</span>            <span class="k">NULL</span>,
+    ModalidadAutoria      <span class="k">VARCHAR</span>(12)     <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> <span class="s">'INDIVIDUAL'</span>,
+<span class="c">    -- INDIVIDUAL, GRUPAL (solo tesis, max 2)</span>
+    PorcentajeSimilitud   <span class="k">DECIMAL</span>(5,2)    <span class="k">NULL</span>, -- resultado final antiplagio
+    UrlRepositorio        <span class="k">VARCHAR</span>(500)    <span class="k">NULL</span>,
+    FechaRegistro         DATETIME2       <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> SYSDATETIME(),
+
+    <span class="k">CONSTRAINT</span> PK_TrabajoInvestigacion <span class="k">PRIMARY</span> <span class="k">KEY</span> (IdTrabajo),
+    <span class="k">CONSTRAINT</span> FK_Trabajo_Tramite
+        <span class="k">FOREIGN</span> <span class="k">KEY</span> (IdTramite) <span class="k">REFERENCES</span> Tramite.Tramite(IdTramite),
+    <span class="k">CONSTRAINT</span> FK_Trabajo_Linea
+        <span class="k">FOREIGN</span> <span class="k">KEY</span> (IdLinea) <span class="k">REFERENCES</span> Catalogo.LineaInvestigacion(IdLinea),
+    <span class="k">CONSTRAINT</span> CHK_Trabajo_Tipo <span class="k">CHECK</span> (TipoTrabajo IN (
+        <span class="s">'TESIS_CUANTITATIVA'</span>, <span class="s">'TESIS_CUALITATIVA'</span>,
+        <span class="s">'TESIS_MIXTA'</span>, <span class="s">'SUFICIENCIA_PROFESIONAL'</span>
+    )),
+    <span class="k">CONSTRAINT</span> CHK_Trabajo_Autoria
+        <span class="k">CHECK</span> (ModalidadAutoria IN (<span class="s">'INDIVIDUAL'</span>, <span class="s">'GRUPAL'</span>)),
+    <span class="k">CONSTRAINT</span> CHK_Trabajo_Similitud
+        <span class="k">CHECK</span> (PorcentajeSimilitud IS <span class="k">NULL</span> OR PorcentajeSimilitud BETWEEN 0 AND 100)
+);
+<span class="k">GO</span>
+
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="c">-- T15: PLAN_TESIS</span>
+<span class="c">-- Plan metodologico previo al desarrollo de la tesis (Art. 20)</span>
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="k">CREATE</span> <span class="k">TABLE</span> Tramite.PlanTesis (
+    IdPlan            <span class="k">INT</span>             <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">IDENTITY</span>(1,1),
+    IdTrabajo         <span class="k">INT</span>             <span class="k">NOT</span> <span class="k">NULL</span>,
+    TituloPlan        <span class="k">NVARCHAR</span>(400)   <span class="k">NOT</span> <span class="k">NULL</span>,
+    FechaAprobacion   <span class="k">DATE</span>            <span class="k">NULL</span>,
+    FechaInicio       <span class="k">DATE</span>            <span class="k">NOT</span> <span class="k">NULL</span>,
+    FechaFin          <span class="k">DATE</span>            <span class="k">NOT</span> <span class="k">NULL</span>,
+    EstadoPlan        <span class="k">VARCHAR</span>(15)     <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> <span class="s">'VIGENTE'</span>,
+<span class="c">    -- VIGENTE, AMPLIADO, SIN_EFECTO</span>
+
+    <span class="k">CONSTRAINT</span> PK_PlanTesis <span class="k">PRIMARY</span> <span class="k">KEY</span> (IdPlan),
+    <span class="k">CONSTRAINT</span> FK_Plan_Trabajo
+        <span class="k">FOREIGN</span> <span class="k">KEY</span> (IdTrabajo) <span class="k">REFERENCES</span> Tramite.TrabajoInvestigacion(IdTrabajo),
+    <span class="k">CONSTRAINT</span> CHK_Plan_Estado
+        <span class="k">CHECK</span> (EstadoPlan IN (<span class="s">'VIGENTE'</span>, <span class="s">'AMPLIADO'</span>, <span class="s">'SIN_EFECTO'</span>)),
+    <span class="k">CONSTRAINT</span> CHK_Plan_Fechas
+        <span class="k">CHECK</span> (FechaFin &gt;= FechaInicio)
+);
+<span class="k">GO</span>
+
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="c">-- T16: DESIGNACION_ASESOR</span>
+<span class="c">-- Asignacion del asesor al trabajo (Art. 24, 66)</span>
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="k">CREATE</span> <span class="k">TABLE</span> Tramite.DesignacionAsesor (
+    IdDesignacion      <span class="k">INT</span>           <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">IDENTITY</span>(1,1),
+    IdTrabajo          <span class="k">INT</span>           <span class="k">NOT</span> <span class="k">NULL</span>,
+    IdDocente          <span class="k">INT</span>           <span class="k">NOT</span> <span class="k">NULL</span>,
+    FechaDesignacion   <span class="k">DATE</span>          <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> CAST(SYSDATETIME() <span class="k">AS</span> <span class="k">DATE</span>),
+    NroResolucion      <span class="k">VARCHAR</span>(40)   <span class="k">NOT</span> <span class="k">NULL</span>,
+    Estado             <span class="k">VARCHAR</span>(12)   <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> <span class="s">'ACTIVO'</span>,
+<span class="c">    -- ACTIVO, SUSTITUIDO, RENUNCIADO</span>
+    MotivoRetiro       <span class="k">VARCHAR</span>(200)  <span class="k">NULL</span>,
+
+    <span class="k">CONSTRAINT</span> PK_DesignacionAsesor <span class="k">PRIMARY</span> <span class="k">KEY</span> (IdDesignacion),
+    <span class="k">CONSTRAINT</span> FK_DesigAsesor_Trabajo
+        <span class="k">FOREIGN</span> <span class="k">KEY</span> (IdTrabajo) <span class="k">REFERENCES</span> Tramite.TrabajoInvestigacion(IdTrabajo),
+    <span class="k">CONSTRAINT</span> FK_DesigAsesor_Docente
+        <span class="k">FOREIGN</span> <span class="k">KEY</span> (IdDocente) <span class="k">REFERENCES</span> Academico.Docente(IdDocente),
+    <span class="k">CONSTRAINT</span> CHK_DesigAsesor_Estado
+        <span class="k">CHECK</span> (Estado IN (<span class="s">'ACTIVO'</span>, <span class="s">'SUSTITUIDO'</span>, <span class="s">'RENUNCIADO'</span>))
+);
+<span class="k">GO</span>
+
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="c">-- T17: DESIGNACION_JURADO</span>
+<span class="c">-- Asignacion de jurados revisores/evaluadores (Art. 34, 72)</span>
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="k">CREATE</span> <span class="k">TABLE</span> Tramite.DesignacionJurado (
+    IdDesigJurado      <span class="k">INT</span>           <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">IDENTITY</span>(1,1),
+    IdTrabajo          <span class="k">INT</span>           <span class="k">NOT</span> <span class="k">NULL</span>,
+    IdDocente          <span class="k">INT</span>           <span class="k">NOT</span> <span class="k">NULL</span>,
+    NroResolucion      <span class="k">VARCHAR</span>(40)   <span class="k">NOT</span> <span class="k">NULL</span>,
+    RolJurado          <span class="k">VARCHAR</span>(12)   <span class="k">NOT</span> <span class="k">NULL</span>,
+<span class="c">    -- TITULAR_1, TITULAR_2, TITULAR_3, SUPLENTE</span>
+    Estado             <span class="k">VARCHAR</span>(12)   <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> <span class="s">'DESIGNADO'</span>,
+<span class="c">    -- DESIGNADO, REEMPLAZADO, INASISTENTE</span>
+    FechaDesignacion   <span class="k">DATE</span>          <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> CAST(SYSDATETIME() <span class="k">AS</span> <span class="k">DATE</span>),
+
+    <span class="k">CONSTRAINT</span> PK_DesignacionJurado <span class="k">PRIMARY</span> <span class="k">KEY</span> (IdDesigJurado),
+    <span class="k">CONSTRAINT</span> FK_DesigJurado_Trabajo
+        <span class="k">FOREIGN</span> <span class="k">KEY</span> (IdTrabajo) <span class="k">REFERENCES</span> Tramite.TrabajoInvestigacion(IdTrabajo),
+    <span class="k">CONSTRAINT</span> FK_DesigJurado_Docente
+        <span class="k">FOREIGN</span> <span class="k">KEY</span> (IdDocente) <span class="k">REFERENCES</span> Academico.Docente(IdDocente),
+    <span class="k">CONSTRAINT</span> CHK_DesigJurado_Rol
+        <span class="k">CHECK</span> (RolJurado IN (<span class="s">'TITULAR_1'</span>, <span class="s">'TITULAR_2'</span>, <span class="s">'TITULAR_3'</span>, <span class="s">'SUPLENTE'</span>)),
+    <span class="k">CONSTRAINT</span> CHK_DesigJurado_Estado
+        <span class="k">CHECK</span> (Estado IN (<span class="s">'DESIGNADO'</span>, <span class="s">'REEMPLAZADO'</span>, <span class="s">'INASISTENTE'</span>))
+);
+<span class="k">GO</span>
+
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="c">-- T18: EXPERIENCIA_LABORAL</span>
+<span class="c">-- Para modalidad suficiencia profesional (Art. 49 inc. c)</span>
+<span class="c">-- Minimo 2 anios acumulativos despues del grado de bachiller</span>
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="k">CREATE</span> <span class="k">TABLE</span> Tramite.ExperienciaLaboral (
+    IdExperiencia       <span class="k">INT</span>             <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">IDENTITY</span>(1,1),
+    IdTramite           <span class="k">INT</span>             <span class="k">NOT</span> <span class="k">NULL</span>,
+    NombreEntidad       <span class="k">VARCHAR</span>(200)    <span class="k">NOT</span> <span class="k">NULL</span>,
+    TipoEntidad         <span class="k">VARCHAR</span>(8)      <span class="k">NOT</span> <span class="k">NULL</span>, -- PUBLICA, PRIVADA
+    Cargo                <span class="k">VARCHAR</span>(150)    <span class="k">NULL</span>,
+    FechaInicio          <span class="k">DATE</span>            <span class="k">NOT</span> <span class="k">NULL</span>,
+    FechaFin             <span class="k">DATE</span>            <span class="k">NULL</span>,     -- <span class="k">NULL</span> si sigue activo
+    AniosAcumulados      <span class="k">DECIMAL</span>(4,2)    <span class="k">NULL</span>,
+    NroCertificadoTrab   <span class="k">VARCHAR</span>(60)     <span class="k">NULL</span>,
+    TipoDocPago          <span class="k">VARCHAR</span>(20)     <span class="k">NULL</span>,
+<span class="c">    -- BOLETA_PAGO, RECIBO_HONORARIOS</span>
+
+    <span class="k">CONSTRAINT</span> PK_ExperienciaLaboral <span class="k">PRIMARY</span> <span class="k">KEY</span> (IdExperiencia),
+    <span class="k">CONSTRAINT</span> FK_ExpLaboral_Tramite
+        <span class="k">FOREIGN</span> <span class="k">KEY</span> (IdTramite) <span class="k">REFERENCES</span> Tramite.Tramite(IdTramite),
+    <span class="k">CONSTRAINT</span> CHK_ExpLaboral_TipoEntidad
+        <span class="k">CHECK</span> (TipoEntidad IN (<span class="s">'PUBLICA'</span>, <span class="s">'PRIVADA'</span>)),
+    <span class="k">CONSTRAINT</span> CHK_ExpLaboral_Fechas
+        <span class="k">CHECK</span> (FechaFin IS <span class="k">NULL</span> OR FechaFin &gt;= FechaInicio),
+    <span class="k">CONSTRAINT</span> CHK_ExpLaboral_TipoDoc
+        <span class="k">CHECK</span> (TipoDocPago IS <span class="k">NULL</span> OR TipoDocPago IN (<span class="s">'BOLETA_PAGO'</span>, <span class="s">'RECIBO_HONORARIOS'</span>))
+);
+<span class="k">GO</span>
+
+<span class="c">-- =====================================================================</span>
+<span class="c">-- 9. TABLAS DE EVALUACION</span>
+<span class="c">-- =====================================================================</span>
+
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="c">-- T19: EVALUACION_TRABAJO</span>
+<span class="c">-- Evaluaciones formales del asesor y jurados (Anexos 3-7)</span>
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="k">CREATE</span> <span class="k">TABLE</span> Evaluacion.EvaluacionTrabajo (
+    IdEvaluacion       <span class="k">INT</span>             <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">IDENTITY</span>(1,1),
+    IdTrabajo          <span class="k">INT</span>             <span class="k">NOT</span> <span class="k">NULL</span>,
+    IdEvaluador        <span class="k">INT</span>             <span class="k">NOT</span> <span class="k">NULL</span>, -- FK -&gt; Docente
+    TipoEvaluador      <span class="k">VARCHAR</span>(8)      <span class="k">NOT</span> <span class="k">NULL</span>, -- ASESOR, JURADO
+    EtapaEvaluacion    <span class="k">VARCHAR</span>(18)     <span class="k">NOT</span> <span class="k">NULL</span>,
+<span class="c">    -- PLAN, INFORME_FINAL, SUSTENTACION</span>
+    PuntajeObtenido    <span class="k">DECIMAL</span>(5,2)    <span class="k">NULL</span>,
+    Condicion          <span class="k">VARCHAR</span>(20)     <span class="k">NULL</span>,
+<span class="c">    -- APROBADO, OBS_MENORES, OBS_MAYORES, DESAPROBADO</span>
+    FechaEvaluacion    <span class="k">DATE</span>            <span class="k">NULL</span>,
+    Observaciones      <span class="k">NVARCHAR</span>(2000)  <span class="k">NULL</span>,
+
+    <span class="k">CONSTRAINT</span> PK_EvaluacionTrabajo <span class="k">PRIMARY</span> <span class="k">KEY</span> (IdEvaluacion),
+    <span class="k">CONSTRAINT</span> FK_Eval_Trabajo
+        <span class="k">FOREIGN</span> <span class="k">KEY</span> (IdTrabajo) <span class="k">REFERENCES</span> Tramite.TrabajoInvestigacion(IdTrabajo),
+    <span class="k">CONSTRAINT</span> FK_Eval_Docente
+        <span class="k">FOREIGN</span> <span class="k">KEY</span> (IdEvaluador) <span class="k">REFERENCES</span> Academico.Docente(IdDocente),
+    <span class="k">CONSTRAINT</span> CHK_Eval_TipoEval
+        <span class="k">CHECK</span> (TipoEvaluador IN (<span class="s">'ASESOR'</span>, <span class="s">'JURADO'</span>)),
+    <span class="k">CONSTRAINT</span> CHK_Eval_Etapa
+        <span class="k">CHECK</span> (EtapaEvaluacion IN (<span class="s">'PLAN'</span>, <span class="s">'INFORME_FINAL'</span>, <span class="s">'SUSTENTACION'</span>)),
+    <span class="k">CONSTRAINT</span> CHK_Eval_Condicion <span class="k">CHECK</span> (Condicion IS <span class="k">NULL</span> OR Condicion IN (
+        <span class="s">'APROBADO'</span>, <span class="s">'OBS_MENORES'</span>, <span class="s">'OBS_MAYORES'</span>, <span class="s">'DESAPROBADO'</span>
+    )),
+    <span class="k">CONSTRAINT</span> CHK_Eval_Puntaje
+        <span class="k">CHECK</span> (PuntajeObtenido IS <span class="k">NULL</span> OR PuntajeObtenido BETWEEN 0 AND 40)
+);
+<span class="k">GO</span>
+
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="c">-- T20: DICTAMEN_ETICA</span>
+<span class="c">-- Pronunciamiento del Comite de Etica (Art. 24 inc. c, 34)</span>
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="k">CREATE</span> <span class="k">TABLE</span> Evaluacion.DictamenEtica (
+    IdDictamen       <span class="k">INT</span>             <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">IDENTITY</span>(1,1),
+    IdTrabajo        <span class="k">INT</span>             <span class="k">NOT</span> <span class="k">NULL</span>,
+    Etapa            <span class="k">VARCHAR</span>(15)     <span class="k">NOT</span> <span class="k">NULL</span>, -- PLAN, INFORME_FINAL
+    Resultado        <span class="k">VARCHAR</span>(10)     <span class="k">NOT</span> <span class="k">NULL</span>, -- CONFORME, OBSERVADO
+    Observaciones    <span class="k">NVARCHAR</span>(2000)  <span class="k">NULL</span>,
+    FechaDictamen    <span class="k">DATE</span>            <span class="k">NULL</span>,
+
+    <span class="k">CONSTRAINT</span> PK_DictamenEtica <span class="k">PRIMARY</span> <span class="k">KEY</span> (IdDictamen),
+    <span class="k">CONSTRAINT</span> FK_Dictamen_Trabajo
+        <span class="k">FOREIGN</span> <span class="k">KEY</span> (IdTrabajo) <span class="k">REFERENCES</span> Tramite.TrabajoInvestigacion(IdTrabajo),
+    <span class="k">CONSTRAINT</span> CHK_Dictamen_Etapa
+        <span class="k">CHECK</span> (Etapa IN (<span class="s">'PLAN'</span>, <span class="s">'INFORME_FINAL'</span>)),
+    <span class="k">CONSTRAINT</span> CHK_Dictamen_Resultado
+        <span class="k">CHECK</span> (Resultado IN (<span class="s">'CONFORME'</span>, <span class="s">'OBSERVADO'</span>))
+);
+<span class="k">GO</span>
+
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="c">-- T21: CONTROL_SIMILITUD</span>
+<span class="c">-- Control antiplagio - maximo 3 intentos (Art. 7, Art. 35 inc. e)</span>
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="k">CREATE</span> <span class="k">TABLE</span> Evaluacion.ControlSimilitud (
+    IdControl       <span class="k">INT</span>             <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">IDENTITY</span>(1,1),
+    IdTrabajo       <span class="k">INT</span>             <span class="k">NOT</span> <span class="k">NULL</span>,
+    NroIntento      <span class="k">TINYINT</span>         <span class="k">NOT</span> <span class="k">NULL</span>, -- 1, 2 o 3 (maximo)
+    Porcentaje      <span class="k">DECIMAL</span>(5,2)    <span class="k">NOT</span> <span class="k">NULL</span>,
+    Resultado       <span class="k">VARCHAR</span>(10)     <span class="k">NOT</span> <span class="k">NULL</span>, -- CONFORME, OBSERVADO
+    FechaRevision   <span class="k">DATE</span>            <span class="k">NOT</span> <span class="k">NULL</span>,
+    NroConstancia   <span class="k">VARCHAR</span>(60)     <span class="k">NULL</span>,
+
+    <span class="k">CONSTRAINT</span> PK_ControlSimilitud <span class="k">PRIMARY</span> <span class="k">KEY</span> (IdControl),
+    <span class="k">CONSTRAINT</span> FK_CtrlSim_Trabajo
+        <span class="k">FOREIGN</span> <span class="k">KEY</span> (IdTrabajo) <span class="k">REFERENCES</span> Tramite.TrabajoInvestigacion(IdTrabajo),
+    <span class="k">CONSTRAINT</span> CHK_CtrlSim_Intento
+        <span class="k">CHECK</span> (NroIntento BETWEEN 1 AND 3),
+    <span class="k">CONSTRAINT</span> CHK_CtrlSim_Porcentaje
+        <span class="k">CHECK</span> (Porcentaje BETWEEN 0 AND 100),
+    <span class="k">CONSTRAINT</span> CHK_CtrlSim_Resultado
+        <span class="k">CHECK</span> (Resultado IN (<span class="s">'CONFORME'</span>, <span class="s">'OBSERVADO'</span>)),
+    <span class="k">CONSTRAINT</span> UQ_CtrlSim_Trabajo_Intento
+        <span class="k">UNIQUE</span> (IdTrabajo, NroIntento)
+);
+<span class="k">GO</span>
+
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="c">-- T22: SUSTENTACION</span>
+<span class="c">-- Acto de sustentacion y calificacion (Art. 37, 55, 60)</span>
+<span class="c">-- Maximo 2 intentos por trabajo</span>
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="k">CREATE</span> <span class="k">TABLE</span> Evaluacion.Sustentacion (
+    IdSustentacion       <span class="k">INT</span>             <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">IDENTITY</span>(1,1),
+    IdTrabajo            <span class="k">INT</span>             <span class="k">NOT</span> <span class="k">NULL</span>,
+    NroIntento           <span class="k">TINYINT</span>         <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 1, -- max 2
+    FechaHora            DATETIME2       <span class="k">NOT</span> <span class="k">NULL</span>,
+    Modalidad            <span class="k">VARCHAR</span>(14)     <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> <span class="s">'PRESENCIAL'</span>,
+<span class="c">    -- PRESENCIAL, NO_PRESENCIAL</span>
+    DuracionMinutos      <span class="k">TINYINT</span>         <span class="k">NULL</span>, -- max 45
+    NotaExposicion       <span class="k">DECIMAL</span>(4,2)    <span class="k">NULL</span>,
+    NotaDefensa          <span class="k">DECIMAL</span>(4,2)    <span class="k">NULL</span>,
+    NotaConocimientos    <span class="k">DECIMAL</span>(4,2)    <span class="k">NULL</span>, -- solo suficiencia profesional
+    Condicion            <span class="k">VARCHAR</span>(12)     <span class="k">NULL</span>, -- APROBADO, DESAPROBADO
+    AprobacionTipo       <span class="k">VARCHAR</span>(12)     <span class="k">NULL</span>, -- UNANIMIDAD, MAYORIA
+    NroActa              <span class="k">VARCHAR</span>(40)     <span class="k">NULL</span>,
+
+    <span class="k">CONSTRAINT</span> PK_Sustentacion <span class="k">PRIMARY</span> <span class="k">KEY</span> (IdSustentacion),
+    <span class="k">CONSTRAINT</span> FK_Sust_Trabajo
+        <span class="k">FOREIGN</span> <span class="k">KEY</span> (IdTrabajo) <span class="k">REFERENCES</span> Tramite.TrabajoInvestigacion(IdTrabajo),
+    <span class="k">CONSTRAINT</span> CHK_Sust_Intento
+        <span class="k">CHECK</span> (NroIntento BETWEEN 1 AND 2),
+    <span class="k">CONSTRAINT</span> CHK_Sust_Modalidad
+        <span class="k">CHECK</span> (Modalidad IN (<span class="s">'PRESENCIAL'</span>, <span class="s">'NO_PRESENCIAL'</span>)),
+    <span class="k">CONSTRAINT</span> CHK_Sust_Duracion
+        <span class="k">CHECK</span> (DuracionMinutos IS <span class="k">NULL</span> OR DuracionMinutos &lt;= 45),
+    <span class="k">CONSTRAINT</span> CHK_Sust_Notas <span class="k">CHECK</span> (
+        (NotaExposicion IS <span class="k">NULL</span> OR NotaExposicion BETWEEN 0 AND 20) AND
+        (NotaDefensa IS <span class="k">NULL</span> OR NotaDefensa BETWEEN 0 AND 20) AND
+        (NotaConocimientos IS <span class="k">NULL</span> OR NotaConocimientos BETWEEN 0 AND 20)
+    ),
+    <span class="k">CONSTRAINT</span> CHK_Sust_Condicion
+        <span class="k">CHECK</span> (Condicion IS <span class="k">NULL</span> OR Condicion IN (<span class="s">'APROBADO'</span>, <span class="s">'DESAPROBADO'</span>)),
+    <span class="k">CONSTRAINT</span> CHK_Sust_Aprobacion
+        <span class="k">CHECK</span> (AprobacionTipo IS <span class="k">NULL</span> OR AprobacionTipo IN (<span class="s">'UNANIMIDAD'</span>, <span class="s">'MAYORIA'</span>)),
+    <span class="k">CONSTRAINT</span> UQ_Sust_Trabajo_Intento
+        <span class="k">UNIQUE</span> (IdTrabajo, NroIntento)
+);
+<span class="k">GO</span>
+
+<span class="c">-- =====================================================================</span>
+<span class="c">-- 10. TABLAS DE DOCUMENTOS</span>
+<span class="c">-- =====================================================================</span>
+
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="c">-- T23: RESOLUCION</span>
+<span class="c">-- Resoluciones emitidas durante el proceso (Art. 24, 34, 36)</span>
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="k">CREATE</span> <span class="k">TABLE</span> Documento.Resolucion (
+    IdResolucion     <span class="k">INT</span>            <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">IDENTITY</span>(1,1),
+    IdTramite        <span class="k">INT</span>            <span class="k">NOT</span> <span class="k">NULL</span>,
+    TipoResolucion   <span class="k">VARCHAR</span>(30)    <span class="k">NOT</span> <span class="k">NULL</span>,
+<span class="c">    -- APROBACION_PLAN, DESIGNACION_ASESOR, DESIGNACION_JURADO,</span>
+<span class="c">    -- EXPEDITO, APROBACION_BACHILLER, APROBACION_TITULO,</span>
+<span class="c">    -- CAMBIO_TITULO, CAMBIO_ASESOR, CAMBIO_JURADO, AMPLIACION_PLAZO</span>
+    NroResolucion    <span class="k">VARCHAR</span>(50)    <span class="k">NOT</span> <span class="k">NULL</span>,
+    FechaEmision     <span class="k">DATE</span>           <span class="k">NOT</span> <span class="k">NULL</span>,
+    OrganoEmisor     <span class="k">VARCHAR</span>(25)    <span class="k">NOT</span> <span class="k">NULL</span>,
+<span class="c">    -- DECANO, CONSEJO_FACULTAD, CONSEJO_UNIVERSITARIO</span>
+    Descripcion      <span class="k">VARCHAR</span>(500)   <span class="k">NULL</span>,
+
+    <span class="k">CONSTRAINT</span> PK_Resolucion <span class="k">PRIMARY</span> <span class="k">KEY</span> (IdResolucion),
+    <span class="k">CONSTRAINT</span> FK_Resolucion_Tramite
+        <span class="k">FOREIGN</span> <span class="k">KEY</span> (IdTramite) <span class="k">REFERENCES</span> Tramite.Tramite(IdTramite),
+    <span class="k">CONSTRAINT</span> UQ_Resolucion_Nro <span class="k">UNIQUE</span> (NroResolucion),
+    <span class="k">CONSTRAINT</span> CHK_Resolucion_Tipo <span class="k">CHECK</span> (TipoResolucion IN (
+        <span class="s">'APROBACION_PLAN'</span>, <span class="s">'DESIGNACION_ASESOR'</span>,
+        <span class="s">'DESIGNACION_JURADO'</span>, <span class="s">'EXPEDITO'</span>,
+        <span class="s">'APROBACION_BACHILLER'</span>, <span class="s">'APROBACION_TITULO'</span>,
+        <span class="s">'CAMBIO_TITULO'</span>, <span class="s">'CAMBIO_ASESOR'</span>,
+        <span class="s">'CAMBIO_JURADO'</span>, <span class="s">'AMPLIACION_PLAZO'</span>
+    )),
+    <span class="k">CONSTRAINT</span> CHK_Resolucion_Organo <span class="k">CHECK</span> (OrganoEmisor IN (
+        <span class="s">'DECANO'</span>, <span class="s">'CONSEJO_FACULTAD'</span>, <span class="s">'CONSEJO_UNIVERSITARIO'</span>
+    ))
+);
+<span class="k">GO</span>
+
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="c">-- T24: DIPLOMA</span>
+<span class="c">-- Diploma de bachiller o titulo profesional (Art. 9, 11)</span>
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="k">CREATE</span> <span class="k">TABLE</span> Documento.Diploma (
+    IdDiploma             <span class="k">INT</span>           <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">IDENTITY</span>(1,1),
+    IdTramite             <span class="k">INT</span>           <span class="k">NOT</span> <span class="k">NULL</span>,
+    TipoDiploma           <span class="k">VARCHAR</span>(20)   <span class="k">NOT</span> <span class="k">NULL</span>, -- BACHILLER, TITULO_PROFESIONAL
+    NroDiploma            <span class="k">VARCHAR</span>(40)   <span class="k">NULL</span>,
+    FechaExpedicion       <span class="k">DATE</span>          <span class="k">NULL</span>,
+    FechaRegistroSunedu   <span class="k">DATE</span>          <span class="k">NULL</span>,
+    FirmanteRector        <span class="k">VARCHAR</span>(150)  <span class="k">NULL</span>,
+    FirmanteDecano        <span class="k">VARCHAR</span>(150)  <span class="k">NULL</span>,
+    FirmanteSecretario    <span class="k">VARCHAR</span>(150)  <span class="k">NULL</span>,
+    EsDuplicado           <span class="k">BIT</span>           <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 0,
+    FechaDuplicado        <span class="k">DATE</span>          <span class="k">NULL</span>,
+    MotivosDuplicado      <span class="k">VARCHAR</span>(200)  <span class="k">NULL</span>, -- PERDIDA, DETERIORO
+
+    <span class="k">CONSTRAINT</span> PK_Diploma <span class="k">PRIMARY</span> <span class="k">KEY</span> (IdDiploma),
+    <span class="k">CONSTRAINT</span> FK_Diploma_Tramite
+        <span class="k">FOREIGN</span> <span class="k">KEY</span> (IdTramite) <span class="k">REFERENCES</span> Tramite.Tramite(IdTramite),
+    <span class="k">CONSTRAINT</span> UQ_Diploma_Nro <span class="k">UNIQUE</span> (NroDiploma),
+    <span class="k">CONSTRAINT</span> CHK_Diploma_Tipo
+        <span class="k">CHECK</span> (TipoDiploma IN (<span class="s">'BACHILLER'</span>, <span class="s">'TITULO_PROFESIONAL'</span>)),
+    <span class="k">CONSTRAINT</span> CHK_Diploma_Duplicado
+        <span class="k">CHECK</span> (EsDuplicado = 0 OR MotivosDuplicado IS <span class="k">NOT</span> <span class="k">NULL</span>)
+);
+<span class="k">GO</span>
+
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="c">-- T25: OBSERVACION_TRAMITE</span>
+<span class="c">-- Observaciones y subsanaciones durante el proceso (Art. 15, 35)</span>
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="k">CREATE</span> <span class="k">TABLE</span> Tramite.ObservacionTramite (
+    IdObservacion          <span class="k">INT</span>             <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">IDENTITY</span>(1,1),
+    IdTramite              <span class="k">INT</span>             <span class="k">NOT</span> <span class="k">NULL</span>,
+    TipoObservacion        <span class="k">VARCHAR</span>(15)     <span class="k">NOT</span> <span class="k">NULL</span>,
+<span class="c">    -- FORMATO, METODOLOGIA, ETICA, SIMILITUD, ADMINISTRATIVA</span>
+    Descripcion            <span class="k">NVARCHAR</span>(2000)  <span class="k">NOT</span> <span class="k">NULL</span>,
+    FechaObservacion       <span class="k">DATE</span>            <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> CAST(SYSDATETIME() <span class="k">AS</span> <span class="k">DATE</span>),
+    PlazoSubsanacionDias   <span class="k">SMALLINT</span>        <span class="k">NULL</span>,
+    FechaSubsanacion       <span class="k">DATE</span>            <span class="k">NULL</span>,
+    Estado                 <span class="k">VARCHAR</span>(12)     <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> <span class="s">'PENDIENTE'</span>,
+<span class="c">    -- PENDIENTE, SUBSANADO, ARCHIVADO</span>
+
+    <span class="k">CONSTRAINT</span> PK_ObservacionTramite <span class="k">PRIMARY</span> <span class="k">KEY</span> (IdObservacion),
+    <span class="k">CONSTRAINT</span> FK_Obs_Tramite
+        <span class="k">FOREIGN</span> <span class="k">KEY</span> (IdTramite) <span class="k">REFERENCES</span> Tramite.Tramite(IdTramite),
+    <span class="k">CONSTRAINT</span> CHK_Obs_Tipo <span class="k">CHECK</span> (TipoObservacion IN (
+        <span class="s">'FORMATO'</span>, <span class="s">'METODOLOGIA'</span>, <span class="s">'ETICA'</span>, <span class="s">'SIMILITUD'</span>, <span class="s">'ADMINISTRATIVA'</span>
+    )),
+    <span class="k">CONSTRAINT</span> CHK_Obs_Estado
+        <span class="k">CHECK</span> (Estado IN (<span class="s">'PENDIENTE'</span>, <span class="s">'SUBSANADO'</span>, <span class="s">'ARCHIVADO'</span>)),
+    <span class="k">CONSTRAINT</span> CHK_Obs_Plazo
+        <span class="k">CHECK</span> (PlazoSubsanacionDias IS <span class="k">NULL</span> OR PlazoSubsanacionDias &gt; 0)
+);
+<span class="k">GO</span>
+
+<span class="c">-- =====================================================================</span>
+<span class="c">-- 10B. TABLAS DE SEGURIDAD Y GESTION DE ROLES (RBAC)</span>
+<span class="c">-- Persona = identidad academica/institucional</span>
+<span class="c">-- Usuario = cuenta de acceso al sistema</span>
+<span class="c">-- Rol = funcion de acceso; Permiso = operacion autorizada</span>
+<span class="c">-- =====================================================================</span>
+
+<span class="k">CREATE</span> <span class="k">TABLE</span> Seguridad.Rol (
+    IdRol           <span class="k">SMALLINT</span>      <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">IDENTITY</span>(1,1),
+    NombreRol       <span class="k">VARCHAR</span>(50)   <span class="k">NOT</span> <span class="k">NULL</span>,
+    Descripcion     <span class="k">VARCHAR</span>(250)  <span class="k">NULL</span>,
+    EsSistema       <span class="k">BIT</span>           <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 0,
+    Activo          <span class="k">BIT</span>           <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 1,
+    FechaCreacion   DATETIME2     <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> SYSDATETIME(),
+
+    <span class="k">CONSTRAINT</span> PK_Rol <span class="k">PRIMARY</span> <span class="k">KEY</span> (IdRol),
+    <span class="k">CONSTRAINT</span> UQ_Rol_Nombre <span class="k">UNIQUE</span> (NombreRol)
+);
+<span class="k">GO</span>
+
+<span class="k">INSERT</span> <span class="k">INTO</span> Seguridad.Rol (NombreRol, Descripcion, EsSistema) <span class="k">VALUES</span>
+(<span class="s">'ADMINISTRADOR'</span>, <span class="s">'Administracion integral del sistema y gestion de usuarios.'</span>, 1),
+(<span class="s">'SECRETARIA'</span>, <span class="s">'Gestion administrativa de expedientes y tramites.'</span>, 0),
+(<span class="s">'COORDINADOR'</span>, <span class="s">'Gestion y seguimiento de tramites de grados y titulos.'</span>, 0),
+(<span class="s">'DOCENTE'</span>, <span class="s">'Funciones academicas dentro del sistema.'</span>, 0),
+(<span class="s">'ASESOR'</span>, <span class="s">'Asesoramiento de trabajos de investigacion.'</span>, 0),
+(<span class="s">'JURADO'</span>, <span class="s">'Evaluacion y participacion en sustentaciones.'</span>, 0),
+(<span class="s">'ESTUDIANTE'</span>, <span class="s">'Gestion y consulta del propio tramite academico.'</span>, 0),
+(<span class="s">'DECANO'</span>, <span class="s">'Gestion y aprobacion de procesos de autoridad academica.'</span>, 0),
+(<span class="s">'CONSULTA'</span>, <span class="s">'Acceso limitado a informacion autorizada.'</span>, 0);
+<span class="k">GO</span>
+
+<span class="k">CREATE</span> <span class="k">TABLE</span> Seguridad.Permiso (
+    IdPermiso        <span class="k">INT</span>           <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">IDENTITY</span>(1,1),
+    CodigoPermiso    <span class="k">VARCHAR</span>(80)   <span class="k">NOT</span> <span class="k">NULL</span>,
+    NombrePermiso    <span class="k">VARCHAR</span>(100)  <span class="k">NOT</span> <span class="k">NULL</span>,
+    Descripcion      <span class="k">VARCHAR</span>(250)  <span class="k">NULL</span>,
+    Modulo           <span class="k">VARCHAR</span>(50)   <span class="k">NOT</span> <span class="k">NULL</span>,
+    Activo           <span class="k">BIT</span>           <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 1,
+
+    <span class="k">CONSTRAINT</span> PK_Permiso <span class="k">PRIMARY</span> <span class="k">KEY</span> (IdPermiso),
+    <span class="k">CONSTRAINT</span> UQ_Permiso_Codigo <span class="k">UNIQUE</span> (CodigoPermiso)
+);
+<span class="k">GO</span>
+
+<span class="k">INSERT</span> <span class="k">INTO</span> Seguridad.Permiso (CodigoPermiso, NombrePermiso, Descripcion, Modulo) <span class="k">VALUES</span>
+(<span class="s">'PERSONA.CONSULTAR'</span>, <span class="s">'Consultar personas'</span>, <span class="s">'Permite consultar informacion de personas.'</span>, <span class="s">'PERSONAS'</span>),
+(<span class="s">'PERSONA.REGISTRAR'</span>, <span class="s">'Registrar personas'</span>, <span class="s">'Permite registrar nuevas personas.'</span>, <span class="s">'PERSONAS'</span>),
+(<span class="s">'PERSONA.MODIFICAR'</span>, <span class="s">'Modificar personas'</span>, <span class="s">'Permite modificar informacion de personas.'</span>, <span class="s">'PERSONAS'</span>),
+(<span class="s">'TRAMITE.CONSULTAR'</span>, <span class="s">'Consultar tramites'</span>, <span class="s">'Permite consultar tramites.'</span>, <span class="s">'TRAMITES'</span>),
+(<span class="s">'TRAMITE.REGISTRAR'</span>, <span class="s">'Registrar tramites'</span>, <span class="s">'Permite registrar tramites.'</span>, <span class="s">'TRAMITES'</span>),
+(<span class="s">'TRAMITE.MODIFICAR'</span>, <span class="s">'Modificar tramites'</span>, <span class="s">'Permite modificar tramites.'</span>, <span class="s">'TRAMITES'</span>),
+(<span class="s">'TRABAJO.CONSULTAR'</span>, <span class="s">'Consultar trabajos'</span>, <span class="s">'Permite consultar trabajos de investigacion.'</span>, <span class="s">'INVESTIGACION'</span>),
+(<span class="s">'TRABAJO.REGISTRAR'</span>, <span class="s">'Registrar trabajos'</span>, <span class="s">'Permite registrar trabajos de investigacion.'</span>, <span class="s">'INVESTIGACION'</span>),
+(<span class="s">'TRABAJO.MODIFICAR'</span>, <span class="s">'Modificar trabajos'</span>, <span class="s">'Permite modificar trabajos de investigacion.'</span>, <span class="s">'INVESTIGACION'</span>),
+(<span class="s">'EVALUACION.CONSULTAR'</span>, <span class="s">'Consultar evaluaciones'</span>, <span class="s">'Permite consultar evaluaciones.'</span>, <span class="s">'EVALUACION'</span>),
+(<span class="s">'EVALUACION.REGISTRAR'</span>, <span class="s">'Registrar evaluaciones'</span>, <span class="s">'Permite registrar evaluaciones.'</span>, <span class="s">'EVALUACION'</span>),
+(<span class="s">'EVALUACION.MODIFICAR'</span>, <span class="s">'Modificar evaluaciones'</span>, <span class="s">'Permite modificar evaluaciones.'</span>, <span class="s">'EVALUACION'</span>),
+(<span class="s">'DOCUMENTO.CONSULTAR'</span>, <span class="s">'Consultar documentos'</span>, <span class="s">'Permite consultar documentos.'</span>, <span class="s">'DOCUMENTOS'</span>),
+(<span class="s">'DOCUMENTO.REGISTRAR'</span>, <span class="s">'Registrar documentos'</span>, <span class="s">'Permite registrar documentos.'</span>, <span class="s">'DOCUMENTOS'</span>),
+(<span class="s">'USUARIO.CONSULTAR'</span>, <span class="s">'Consultar usuarios'</span>, <span class="s">'Permite consultar usuarios.'</span>, <span class="s">'SEGURIDAD'</span>),
+(<span class="s">'USUARIO.REGISTRAR'</span>, <span class="s">'Registrar usuarios'</span>, <span class="s">'Permite registrar usuarios.'</span>, <span class="s">'SEGURIDAD'</span>),
+(<span class="s">'USUARIO.MODIFICAR'</span>, <span class="s">'Modificar usuarios'</span>, <span class="s">'Permite modificar usuarios.'</span>, <span class="s">'SEGURIDAD'</span>),
+(<span class="s">'ROL.GESTIONAR'</span>, <span class="s">'Gestionar roles'</span>, <span class="s">'Permite administrar roles del sistema.'</span>, <span class="s">'SEGURIDAD'</span>);
+<span class="k">GO</span>
+
+<span class="k">CREATE</span> <span class="k">TABLE</span> Seguridad.Usuario (
+    IdUsuario               <span class="k">INT</span>              <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">IDENTITY</span>(1,1),
+    IdPersona               <span class="k">INT</span>              <span class="k">NULL</span>,
+    NombreUsuario            <span class="k">VARCHAR</span>(60)      <span class="k">NOT</span> <span class="k">NULL</span>,
+    PasswordHash             VARBINARY(256)   <span class="k">NOT</span> <span class="k">NULL</span>,
+    PasswordSalt             VARBINARY(128)   <span class="k">NOT</span> <span class="k">NULL</span>,
+    CorreoInstitucional      <span class="k">VARCHAR</span>(150)     <span class="k">NULL</span>,
+    Estado                   <span class="k">VARCHAR</span>(15)      <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> <span class="s">'ACTIVO'</span>,
+    IntentosFallidos         <span class="k">TINYINT</span>          <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 0,
+    Bloqueado                <span class="k">BIT</span>              <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 0,
+    FechaUltimoAcceso        DATETIME2        <span class="k">NULL</span>,
+    FechaCreacion            DATETIME2        <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> SYSDATETIME(),
+    FechaModificacion        DATETIME2        <span class="k">NULL</span>,
+
+    <span class="k">CONSTRAINT</span> PK_Usuario <span class="k">PRIMARY</span> <span class="k">KEY</span> (IdUsuario),
+    <span class="k">CONSTRAINT</span> UQ_Usuario_Persona <span class="k">UNIQUE</span> (IdPersona),
+    <span class="k">CONSTRAINT</span> UQ_Usuario_Nombre <span class="k">UNIQUE</span> (NombreUsuario),
+    <span class="k">CONSTRAINT</span> UQ_Usuario_Correo <span class="k">UNIQUE</span> (CorreoInstitucional),
+    <span class="k">CONSTRAINT</span> FK_Usuario_Persona <span class="k">FOREIGN</span> <span class="k">KEY</span> (IdPersona) <span class="k">REFERENCES</span> Academico.Persona(IdPersona),
+    <span class="k">CONSTRAINT</span> CHK_Usuario_Estado <span class="k">CHECK</span> (Estado IN (<span class="s">'ACTIVO'</span>, <span class="s">'INACTIVO'</span>, <span class="s">'BLOQUEADO'</span>, <span class="s">'PENDIENTE'</span>)),
+    <span class="k">CONSTRAINT</span> CHK_Usuario_Intentos <span class="k">CHECK</span> (IntentosFallidos BETWEEN 0 AND 10),
+    <span class="k">CONSTRAINT</span> CHK_Usuario_Bloqueo <span class="k">CHECK</span> (Bloqueado = 0 OR Estado = <span class="s">'BLOQUEADO'</span>)
+);
+<span class="k">GO</span>
+
+<span class="k">CREATE</span> <span class="k">TABLE</span> Seguridad.UsuarioRol (
+    IdUsuarioRol       BIGINT       <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">IDENTITY</span>(1,1),
+    IdUsuario          <span class="k">INT</span>          <span class="k">NOT</span> <span class="k">NULL</span>,
+    IdRol              <span class="k">SMALLINT</span>     <span class="k">NOT</span> <span class="k">NULL</span>,
+    FechaAsignacion    DATETIME2    <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> SYSDATETIME(),
+    FechaInicio        <span class="k">DATE</span>         <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> CAST(SYSDATETIME() <span class="k">AS</span> <span class="k">DATE</span>),
+    FechaFin           <span class="k">DATE</span>         <span class="k">NULL</span>,
+    Activo             <span class="k">BIT</span>          <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 1,
+    Observacion        <span class="k">VARCHAR</span>(250) <span class="k">NULL</span>,
+
+    <span class="k">CONSTRAINT</span> PK_UsuarioRol <span class="k">PRIMARY</span> <span class="k">KEY</span> (IdUsuarioRol),
+    <span class="k">CONSTRAINT</span> FK_UsuarioRol_Usuario <span class="k">FOREIGN</span> <span class="k">KEY</span> (IdUsuario) <span class="k">REFERENCES</span> Seguridad.Usuario(IdUsuario),
+    <span class="k">CONSTRAINT</span> FK_UsuarioRol_Rol <span class="k">FOREIGN</span> <span class="k">KEY</span> (IdRol) <span class="k">REFERENCES</span> Seguridad.Rol(IdRol),
+    <span class="k">CONSTRAINT</span> UQ_UsuarioRol <span class="k">UNIQUE</span> (IdUsuario, IdRol),
+    <span class="k">CONSTRAINT</span> CHK_UsuarioRol_Fechas <span class="k">CHECK</span> (FechaFin IS <span class="k">NULL</span> OR FechaFin &gt;= FechaInicio)
+);
+<span class="k">GO</span>
+
+<span class="k">CREATE</span> <span class="k">TABLE</span> Seguridad.RolPermiso (
+    IdRolPermiso       BIGINT      <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">IDENTITY</span>(1,1),
+    IdRol              <span class="k">SMALLINT</span>    <span class="k">NOT</span> <span class="k">NULL</span>,
+    IdPermiso          <span class="k">INT</span>         <span class="k">NOT</span> <span class="k">NULL</span>,
+    FechaAsignacion    DATETIME2   <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> SYSDATETIME(),
+    Activo             <span class="k">BIT</span>         <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 1,
+
+    <span class="k">CONSTRAINT</span> PK_RolPermiso <span class="k">PRIMARY</span> <span class="k">KEY</span> (IdRolPermiso),
+    <span class="k">CONSTRAINT</span> FK_RolPermiso_Rol <span class="k">FOREIGN</span> <span class="k">KEY</span> (IdRol) <span class="k">REFERENCES</span> Seguridad.Rol(IdRol),
+    <span class="k">CONSTRAINT</span> FK_RolPermiso_Permiso <span class="k">FOREIGN</span> <span class="k">KEY</span> (IdPermiso) <span class="k">REFERENCES</span> Seguridad.Permiso(IdPermiso),
+    <span class="k">CONSTRAINT</span> UQ_RolPermiso <span class="k">UNIQUE</span> (IdRol, IdPermiso)
+);
+<span class="k">GO</span>
+
+<span class="c">-- Permisos por rol</span>
+<span class="k">INSERT</span> <span class="k">INTO</span> Seguridad.RolPermiso(IdRol,IdPermiso)
+<span class="k">SELECT</span> r.IdRol,p.IdPermiso <span class="k">FROM</span> Seguridad.Rol r CROSS JOIN Seguridad.Permiso p
+<span class="k">WHERE</span> r.NombreRol=<span class="s">'ADMINISTRADOR'</span>;
+<span class="k">GO</span>
+
+<span class="k">INSERT</span> <span class="k">INTO</span> Seguridad.RolPermiso(IdRol,IdPermiso)
+<span class="k">SELECT</span> r.IdRol,p.IdPermiso <span class="k">FROM</span> Seguridad.Rol r CROSS JOIN Seguridad.Permiso p
+<span class="k">WHERE</span> r.NombreRol=<span class="s">'SECRETARIA'</span> AND p.CodigoPermiso IN
+(<span class="s">'PERSONA.CONSULTAR'</span>,<span class="s">'PERSONA.REGISTRAR'</span>,<span class="s">'PERSONA.MODIFICAR'</span>,<span class="s">'TRAMITE.CONSULTAR'</span>,
+ <span class="s">'TRAMITE.REGISTRAR'</span>,<span class="s">'TRAMITE.MODIFICAR'</span>,<span class="s">'DOCUMENTO.CONSULTAR'</span>,<span class="s">'DOCUMENTO.REGISTRAR'</span>);
+<span class="k">GO</span>
+
+<span class="k">INSERT</span> <span class="k">INTO</span> Seguridad.RolPermiso(IdRol,IdPermiso)
+<span class="k">SELECT</span> r.IdRol,p.IdPermiso <span class="k">FROM</span> Seguridad.Rol r CROSS JOIN Seguridad.Permiso p
+<span class="k">WHERE</span> r.NombreRol=<span class="s">'COORDINADOR'</span> AND p.CodigoPermiso IN
+(<span class="s">'PERSONA.CONSULTAR'</span>,<span class="s">'TRAMITE.CONSULTAR'</span>,<span class="s">'TRAMITE.REGISTRAR'</span>,<span class="s">'TRAMITE.MODIFICAR'</span>,
+ <span class="s">'TRABAJO.CONSULTAR'</span>,<span class="s">'DOCUMENTO.CONSULTAR'</span>);
+<span class="k">GO</span>
+
+<span class="k">INSERT</span> <span class="k">INTO</span> Seguridad.RolPermiso(IdRol,IdPermiso)
+<span class="k">SELECT</span> r.IdRol,p.IdPermiso <span class="k">FROM</span> Seguridad.Rol r CROSS JOIN Seguridad.Permiso p
+<span class="k">WHERE</span> r.NombreRol=<span class="s">'DOCENTE'</span> AND p.CodigoPermiso IN
+(<span class="s">'PERSONA.CONSULTAR'</span>,<span class="s">'TRABAJO.CONSULTAR'</span>,<span class="s">'EVALUACION.CONSULTAR'</span>);
+<span class="k">GO</span>
+
+<span class="k">INSERT</span> <span class="k">INTO</span> Seguridad.RolPermiso(IdRol,IdPermiso)
+<span class="k">SELECT</span> r.IdRol,p.IdPermiso <span class="k">FROM</span> Seguridad.Rol r CROSS JOIN Seguridad.Permiso p
+<span class="k">WHERE</span> r.NombreRol=<span class="s">'ASESOR'</span> AND p.CodigoPermiso IN
+(<span class="s">'TRAMITE.CONSULTAR'</span>,<span class="s">'TRABAJO.CONSULTAR'</span>,<span class="s">'TRABAJO.MODIFICAR'</span>,<span class="s">'EVALUACION.CONSULTAR'</span>,
+ <span class="s">'EVALUACION.REGISTRAR'</span>);
+<span class="k">GO</span>
+
+<span class="k">INSERT</span> <span class="k">INTO</span> Seguridad.RolPermiso(IdRol,IdPermiso)
+<span class="k">SELECT</span> r.IdRol,p.IdPermiso <span class="k">FROM</span> Seguridad.Rol r CROSS JOIN Seguridad.Permiso p
+<span class="k">WHERE</span> r.NombreRol=<span class="s">'JURADO'</span> AND p.CodigoPermiso IN
+(<span class="s">'TRAMITE.CONSULTAR'</span>,<span class="s">'TRABAJO.CONSULTAR'</span>,<span class="s">'EVALUACION.CONSULTAR'</span>,<span class="s">'EVALUACION.REGISTRAR'</span>,
+ <span class="s">'EVALUACION.MODIFICAR'</span>);
+<span class="k">GO</span>
+
+<span class="k">INSERT</span> <span class="k">INTO</span> Seguridad.RolPermiso(IdRol,IdPermiso)
+<span class="k">SELECT</span> r.IdRol,p.IdPermiso <span class="k">FROM</span> Seguridad.Rol r CROSS JOIN Seguridad.Permiso p
+<span class="k">WHERE</span> r.NombreRol=<span class="s">'ESTUDIANTE'</span> AND p.CodigoPermiso IN
+(<span class="s">'TRAMITE.CONSULTAR'</span>,<span class="s">'TRABAJO.CONSULTAR'</span>,<span class="s">'EVALUACION.CONSULTAR'</span>,<span class="s">'DOCUMENTO.CONSULTAR'</span>);
+<span class="k">GO</span>
+
+<span class="k">INSERT</span> <span class="k">INTO</span> Seguridad.RolPermiso(IdRol,IdPermiso)
+<span class="k">SELECT</span> r.IdRol,p.IdPermiso <span class="k">FROM</span> Seguridad.Rol r CROSS JOIN Seguridad.Permiso p
+<span class="k">WHERE</span> r.NombreRol=<span class="s">'DECANO'</span> AND p.CodigoPermiso IN
+(<span class="s">'PERSONA.CONSULTAR'</span>,<span class="s">'TRAMITE.CONSULTAR'</span>,<span class="s">'TRAMITE.MODIFICAR'</span>,<span class="s">'TRABAJO.CONSULTAR'</span>,
+ <span class="s">'EVALUACION.CONSULTAR'</span>,<span class="s">'DOCUMENTO.CONSULTAR'</span>,<span class="s">'DOCUMENTO.REGISTRAR'</span>);
+<span class="k">GO</span>
+
+<span class="k">INSERT</span> <span class="k">INTO</span> Seguridad.RolPermiso(IdRol,IdPermiso)
+<span class="k">SELECT</span> r.IdRol,p.IdPermiso <span class="k">FROM</span> Seguridad.Rol r CROSS JOIN Seguridad.Permiso p
+<span class="k">WHERE</span> r.NombreRol=<span class="s">'CONSULTA'</span> AND p.CodigoPermiso IN
+(<span class="s">'PERSONA.CONSULTAR'</span>,<span class="s">'TRAMITE.CONSULTAR'</span>,<span class="s">'TRABAJO.CONSULTAR'</span>,<span class="s">'EVALUACION.CONSULTAR'</span>,
+ <span class="s">'DOCUMENTO.CONSULTAR'</span>);
+<span class="k">GO</span>
+
+<span class="c">-- =====================================================================</span>
+<span class="c">-- 10C. SEGURIDAD AVANZADA</span>
+<span class="c">-- Auditoria + autenticacion + politicas de acceso</span>
+<span class="c">-- + sesiones + MFA + seguridad del DBMS</span>
+<span class="c">-- =====================================================================</span>
+
+<span class="k">CREATE</span> <span class="k">TABLE</span> Seguridad.PoliticaPassword (
+    IdPoliticaPassword    <span class="k">TINYINT</span>      <span class="k">IDENTITY</span>(1,1) <span class="k">NOT</span> <span class="k">NULL</span>,
+    NombrePolitica        <span class="k">VARCHAR</span>(80)  <span class="k">NOT</span> <span class="k">NULL</span>,
+    LongitudMinima        <span class="k">TINYINT</span>      <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 12,
+    RequiereMayuscula     <span class="k">BIT</span>          <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 1,
+    RequiereMinuscula     <span class="k">BIT</span>          <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 1,
+    RequiereNumero        <span class="k">BIT</span>          <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 1,
+    RequiereEspecial      <span class="k">BIT</span>          <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 1,
+    MaximoIntentos        <span class="k">TINYINT</span>      <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 5,
+    DuracionDias          <span class="k">SMALLINT</span>     <span class="k">NULL</span>,
+    HistorialPasswords    <span class="k">TINYINT</span>      <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 5,
+    BloqueoMinutos        <span class="k">SMALLINT</span>     <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 15,
+    Activa                <span class="k">BIT</span>          <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 1,
+    FechaCreacion         DATETIME2    <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> SYSDATETIME(),
+
+    <span class="k">CONSTRAINT</span> PK_PoliticaPassword <span class="k">PRIMARY</span> <span class="k">KEY</span> (IdPoliticaPassword),
+    <span class="k">CONSTRAINT</span> UQ_PoliticaPassword_Nombre <span class="k">UNIQUE</span> (NombrePolitica),
+    <span class="k">CONSTRAINT</span> CHK_PoliticaPassword_Longitud <span class="k">CHECK</span> (LongitudMinima BETWEEN 8 AND 128),
+    <span class="k">CONSTRAINT</span> CHK_PoliticaPassword_Intentos <span class="k">CHECK</span> (MaximoIntentos BETWEEN 1 AND 20),
+    <span class="k">CONSTRAINT</span> CHK_PoliticaPassword_Duracion <span class="k">CHECK</span> (DuracionDias IS <span class="k">NULL</span> OR DuracionDias BETWEEN 1 AND 365),
+    <span class="k">CONSTRAINT</span> CHK_PoliticaPassword_Historial <span class="k">CHECK</span> (HistorialPasswords BETWEEN 0 AND 24),
+    <span class="k">CONSTRAINT</span> CHK_PoliticaPassword_Bloqueo <span class="k">CHECK</span> (BloqueoMinutos BETWEEN 1 AND 1440)
+);
+<span class="k">GO</span>
+
+<span class="k">INSERT</span> <span class="k">INTO</span> Seguridad.PoliticaPassword
+(NombrePolitica,LongitudMinima,RequiereMayuscula,RequiereMinuscula,
+ RequiereNumero,RequiereEspecial,MaximoIntentos,DuracionDias,
+ HistorialPasswords,BloqueoMinutos)
+<span class="k">VALUES</span>
+(<span class="s">'POLITICA_INSTITUCIONAL'</span>,12,1,1,1,1,5,90,5,15);
+<span class="k">GO</span>
+
+<span class="k">CREATE</span> <span class="k">TABLE</span> Seguridad.PasswordHistorial (
+    IdPasswordHistorial   BIGINT <span class="k">IDENTITY</span>(1,1) <span class="k">NOT</span> <span class="k">NULL</span>,
+    IdUsuario             <span class="k">INT</span> <span class="k">NOT</span> <span class="k">NULL</span>,
+    PasswordHash          VARBINARY(512) <span class="k">NOT</span> <span class="k">NULL</span>,
+    Algoritmo             <span class="k">VARCHAR</span>(30) <span class="k">NOT</span> <span class="k">NULL</span>,
+    FechaCreacion          DATETIME2 <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> SYSDATETIME(),
+    FechaExpiracion        DATETIME2 <span class="k">NULL</span>,
+    Activa                 <span class="k">BIT</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 1,
+
+    <span class="k">CONSTRAINT</span> PK_PasswordHistorial <span class="k">PRIMARY</span> <span class="k">KEY</span> (IdPasswordHistorial),
+    <span class="k">CONSTRAINT</span> FK_PasswordHistorial_Usuario <span class="k">FOREIGN</span> <span class="k">KEY</span> (IdUsuario) <span class="k">REFERENCES</span> Seguridad.Usuario(IdUsuario),
+    <span class="k">CONSTRAINT</span> CHK_PasswordHistorial_Algoritmo <span class="k">CHECK</span> (Algoritmo IN (<span class="s">'ARGON2ID'</span>,<span class="s">'BCRYPT'</span>,<span class="s">'PBKDF2'</span>,<span class="s">'OTRO'</span>))
+);
+<span class="k">GO</span>
+
+<span class="k">CREATE</span> <span class="k">TABLE</span> Seguridad.Sesion (
+    IdSesion                 UNIQUEIDENTIFIER <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> NEWSEQUENTIALID(),
+    IdUsuario                <span class="k">INT</span> <span class="k">NOT</span> <span class="k">NULL</span>,
+    FechaInicio               DATETIME2 <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> SYSDATETIME(),
+    FechaUltimaActividad      DATETIME2 <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> SYSDATETIME(),
+    FechaExpiracion           DATETIME2 <span class="k">NOT</span> <span class="k">NULL</span>,
+    FechaCierre               DATETIME2 <span class="k">NULL</span>,
+    Estado                    <span class="k">VARCHAR</span>(15) <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> <span class="s">'ACTIVA'</span>,
+    DireccionIP               <span class="k">VARCHAR</span>(45) <span class="k">NULL</span>,
+    UserAgent                 <span class="k">NVARCHAR</span>(500) <span class="k">NULL</span>,
+    Dispositivo               <span class="k">VARCHAR</span>(150) <span class="k">NULL</span>,
+    Revocada                  <span class="k">BIT</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 0,
+
+    <span class="k">CONSTRAINT</span> PK_Sesion <span class="k">PRIMARY</span> <span class="k">KEY</span> (IdSesion),
+    <span class="k">CONSTRAINT</span> FK_Sesion_Usuario <span class="k">FOREIGN</span> <span class="k">KEY</span> (IdUsuario) <span class="k">REFERENCES</span> Seguridad.Usuario(IdUsuario),
+    <span class="k">CONSTRAINT</span> CHK_Sesion_Estado <span class="k">CHECK</span> (Estado IN (<span class="s">'ACTIVA'</span>,<span class="s">'CERRADA'</span>,<span class="s">'EXPIRADA'</span>,<span class="s">'REVOCADA'</span>)),
+    <span class="k">CONSTRAINT</span> CHK_Sesion_Fechas <span class="k">CHECK</span> (FechaExpiracion &gt; FechaInicio)
+);
+<span class="k">GO</span>
+
+<span class="k">CREATE</span> <span class="k">TABLE</span> Seguridad.PoliticaAcceso (
+    IdPoliticaAcceso   <span class="k">INT</span> <span class="k">IDENTITY</span>(1,1) <span class="k">NOT</span> <span class="k">NULL</span>,
+    NombrePolitica     <span class="k">VARCHAR</span>(100) <span class="k">NOT</span> <span class="k">NULL</span>,
+    Descripcion        <span class="k">VARCHAR</span>(300) <span class="k">NULL</span>,
+    IdRol              <span class="k">SMALLINT</span> <span class="k">NULL</span>,
+    HoraInicio         TIME(0) <span class="k">NULL</span>,
+    HoraFin            TIME(0) <span class="k">NULL</span>,
+    DiasSemana         <span class="k">VARCHAR</span>(20) <span class="k">NULL</span>,
+    CIDRPermitido      <span class="k">VARCHAR</span>(100) <span class="k">NULL</span>,
+    RequiereMFA        <span class="k">BIT</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 0,
+    PermitirAcceso     <span class="k">BIT</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 1,
+    Prioridad          <span class="k">SMALLINT</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 100,
+    Activa             <span class="k">BIT</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 1,
+    FechaCreacion      DATETIME2 <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> SYSDATETIME(),
+
+    <span class="k">CONSTRAINT</span> PK_PoliticaAcceso <span class="k">PRIMARY</span> <span class="k">KEY</span> (IdPoliticaAcceso),
+    <span class="k">CONSTRAINT</span> UQ_PoliticaAcceso_Nombre <span class="k">UNIQUE</span> (NombrePolitica),
+    <span class="k">CONSTRAINT</span> FK_PoliticaAcceso_Rol <span class="k">FOREIGN</span> <span class="k">KEY</span> (IdRol) <span class="k">REFERENCES</span> Seguridad.Rol(IdRol),
+    <span class="k">CONSTRAINT</span> CHK_PoliticaAcceso_Prioridad <span class="k">CHECK</span> (Prioridad BETWEEN 1 AND 1000)
+);
+<span class="k">GO</span>
+
+<span class="k">CREATE</span> <span class="k">TABLE</span> Seguridad.UsuarioPoliticaAcceso (
+    IdUsuarioPolitica   BIGINT <span class="k">IDENTITY</span>(1,1) <span class="k">NOT</span> <span class="k">NULL</span>,
+    IdUsuario           <span class="k">INT</span> <span class="k">NOT</span> <span class="k">NULL</span>,
+    IdPoliticaAcceso    <span class="k">INT</span> <span class="k">NOT</span> <span class="k">NULL</span>,
+    FechaInicio          DATETIME2 <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> SYSDATETIME(),
+    FechaFin             DATETIME2 <span class="k">NULL</span>,
+    Activa               <span class="k">BIT</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 1,
+    Motivo               <span class="k">VARCHAR</span>(300) <span class="k">NULL</span>,
+
+    <span class="k">CONSTRAINT</span> PK_UsuarioPoliticaAcceso <span class="k">PRIMARY</span> <span class="k">KEY</span> (IdUsuarioPolitica),
+    <span class="k">CONSTRAINT</span> FK_UsuarioPolitica_Usuario <span class="k">FOREIGN</span> <span class="k">KEY</span> (IdUsuario) <span class="k">REFERENCES</span> Seguridad.Usuario(IdUsuario),
+    <span class="k">CONSTRAINT</span> FK_UsuarioPolitica_Politica <span class="k">FOREIGN</span> <span class="k">KEY</span> (IdPoliticaAcceso) <span class="k">REFERENCES</span> Seguridad.PoliticaAcceso(IdPoliticaAcceso),
+    <span class="k">CONSTRAINT</span> CHK_UsuarioPolitica_Fechas <span class="k">CHECK</span> (FechaFin IS <span class="k">NULL</span> OR FechaFin &gt;= FechaInicio)
+);
+<span class="k">GO</span>
+
+<span class="k">CREATE</span> <span class="k">TABLE</span> Seguridad.AuditoriaSeguridad (
+    IdAuditoria     BIGINT <span class="k">IDENTITY</span>(1,1) <span class="k">NOT</span> <span class="k">NULL</span>,
+    FechaHora       DATETIME2 <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> SYSDATETIME(),
+    IdUsuario       <span class="k">INT</span> <span class="k">NULL</span>,
+    NombreUsuario   <span class="k">VARCHAR</span>(60) <span class="k">NULL</span>,
+    TipoEvento      <span class="k">VARCHAR</span>(35) <span class="k">NOT</span> <span class="k">NULL</span>,
+    Resultado       <span class="k">VARCHAR</span>(15) <span class="k">NOT</span> <span class="k">NULL</span>,
+    Modulo          <span class="k">VARCHAR</span>(50) <span class="k">NULL</span>,
+    Accion          <span class="k">VARCHAR</span>(80) <span class="k">NULL</span>,
+    DireccionIP     <span class="k">VARCHAR</span>(45) <span class="k">NULL</span>,
+    UserAgent       <span class="k">NVARCHAR</span>(500) <span class="k">NULL</span>,
+    IdSesion        UNIQUEIDENTIFIER <span class="k">NULL</span>,
+    Objeto          <span class="k">VARCHAR</span>(150) <span class="k">NULL</span>,
+    Detalle         <span class="k">NVARCHAR</span>(2000) <span class="k">NULL</span>,
+    DatosAntes      <span class="k">NVARCHAR</span>(MAX) <span class="k">NULL</span>,
+    DatosDespues    <span class="k">NVARCHAR</span>(MAX) <span class="k">NULL</span>,
+    CorrelationId   UNIQUEIDENTIFIER <span class="k">NULL</span>,
+
+    <span class="k">CONSTRAINT</span> PK_AuditoriaSeguridad <span class="k">PRIMARY</span> <span class="k">KEY</span> (IdAuditoria),
+    <span class="k">CONSTRAINT</span> FK_AuditoriaSeguridad_Usuario <span class="k">FOREIGN</span> <span class="k">KEY</span> (IdUsuario) <span class="k">REFERENCES</span> Seguridad.Usuario(IdUsuario),
+    <span class="k">CONSTRAINT</span> CHK_Auditoria_Evento <span class="k">CHECK</span> (TipoEvento IN (
+        <span class="s">'LOGIN'</span>,<span class="s">'LOGOUT'</span>,<span class="s">'LOGIN_FALLIDO'</span>,<span class="s">'PASSWORD_CAMBIO'</span>,
+        <span class="s">'PASSWORD_RESET'</span>,<span class="s">'MFA'</span>,<span class="s">'ACCESO_PERMITIDO'</span>,<span class="s">'ACCESO_DENEGADO'</span>,
+        <span class="s">'ROL_ASIGNADO'</span>,<span class="s">'ROL_REVOCADO'</span>,<span class="s">'PERMISO_ASIGNADO'</span>,
+        <span class="s">'PERMISO_REVOCADO'</span>,<span class="s">'CUENTA_BLOQUEADA'</span>,<span class="s">'CUENTA_DESBLOQUEADA'</span>,
+        <span class="s">'SESION_REVOCADA'</span>,<span class="s">'POLITICA_VIOLADA'</span>,<span class="s">'DATOS_SENSIBLES'</span>,
+        <span class="s">'CONFIGURACION'</span>
+    )),
+    <span class="k">CONSTRAINT</span> CHK_Auditoria_Resultado <span class="k">CHECK</span> (
+        Resultado IN (<span class="s">'EXITOSO'</span>,<span class="s">'FALLIDO'</span>,<span class="s">'DENEGADO'</span>,<span class="s">'ERROR'</span>,<span class="s">'INFORMATIVO'</span>))
+);
+<span class="k">GO</span>
+
+<span class="k">CREATE</span> <span class="k">TABLE</span> Seguridad.AuditoriaDatos (
+    IdAuditoriaDatos   BIGINT <span class="k">IDENTITY</span>(1,1) <span class="k">NOT</span> <span class="k">NULL</span>,
+    FechaHora          DATETIME2 <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> SYSDATETIME(),
+    IdUsuario          <span class="k">INT</span> <span class="k">NULL</span>,
+    IdSesion           UNIQUEIDENTIFIER <span class="k">NULL</span>,
+    Operacion          <span class="k">CHAR</span>(1) <span class="k">NOT</span> <span class="k">NULL</span>,
+    EsquemaObjeto      SYSNAME <span class="k">NOT</span> <span class="k">NULL</span>,
+    NombreObjeto       SYSNAME <span class="k">NOT</span> <span class="k">NULL</span>,
+    ClaveRegistro      <span class="k">NVARCHAR</span>(500) <span class="k">NULL</span>,
+    DatosAntes         <span class="k">NVARCHAR</span>(MAX) <span class="k">NULL</span>,
+    DatosDespues       <span class="k">NVARCHAR</span>(MAX) <span class="k">NULL</span>,
+    DireccionIP        <span class="k">VARCHAR</span>(45) <span class="k">NULL</span>,
+    CorrelationId      UNIQUEIDENTIFIER <span class="k">NULL</span>,
+
+    <span class="k">CONSTRAINT</span> PK_AuditoriaDatos <span class="k">PRIMARY</span> <span class="k">KEY</span> (IdAuditoriaDatos),
+    <span class="k">CONSTRAINT</span> FK_AuditoriaDatos_Usuario <span class="k">FOREIGN</span> <span class="k">KEY</span> (IdUsuario) <span class="k">REFERENCES</span> Seguridad.Usuario(IdUsuario),
+    <span class="k">CONSTRAINT</span> CHK_AuditoriaDatos_Operacion <span class="k">CHECK</span> (Operacion IN (<span class="s">'I'</span>,<span class="s">'U'</span>,<span class="s">'D'</span>))
+);
+<span class="k">GO</span>
+
+<span class="k">CREATE</span> <span class="k">TABLE</span> Seguridad.HistorialAutorizacion (
+    IdHistorial          BIGINT <span class="k">IDENTITY</span>(1,1) <span class="k">NOT</span> <span class="k">NULL</span>,
+    FechaHora            DATETIME2 <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> SYSDATETIME(),
+    IdUsuarioObjetivo    <span class="k">INT</span> <span class="k">NULL</span>,
+    IdUsuarioEjecutor    <span class="k">INT</span> <span class="k">NULL</span>,
+    TipoCambio           <span class="k">VARCHAR</span>(30) <span class="k">NOT</span> <span class="k">NULL</span>,
+    IdRol                <span class="k">SMALLINT</span> <span class="k">NULL</span>,
+    IdPermiso            <span class="k">INT</span> <span class="k">NULL</span>,
+    Motivo               <span class="k">VARCHAR</span>(500) <span class="k">NULL</span>,
+    ActivoAnterior       <span class="k">BIT</span> <span class="k">NULL</span>,
+    ActivoNuevo          <span class="k">BIT</span> <span class="k">NULL</span>,
+
+    <span class="k">CONSTRAINT</span> PK_HistorialAutorizacion <span class="k">PRIMARY</span> <span class="k">KEY</span> (IdHistorial),
+    <span class="k">CONSTRAINT</span> FK_HistAut_UsuarioObjetivo <span class="k">FOREIGN</span> <span class="k">KEY</span> (IdUsuarioObjetivo) <span class="k">REFERENCES</span> Seguridad.Usuario(IdUsuario),
+    <span class="k">CONSTRAINT</span> FK_HistAut_UsuarioEjecutor <span class="k">FOREIGN</span> <span class="k">KEY</span> (IdUsuarioEjecutor) <span class="k">REFERENCES</span> Seguridad.Usuario(IdUsuario),
+    <span class="k">CONSTRAINT</span> FK_HistAut_Rol <span class="k">FOREIGN</span> <span class="k">KEY</span> (IdRol) <span class="k">REFERENCES</span> Seguridad.Rol(IdRol),
+    <span class="k">CONSTRAINT</span> FK_HistAut_Permiso <span class="k">FOREIGN</span> <span class="k">KEY</span> (IdPermiso) <span class="k">REFERENCES</span> Seguridad.Permiso(IdPermiso),
+    <span class="k">CONSTRAINT</span> CHK_HistAut_Tipo <span class="k">CHECK</span> (TipoCambio IN (
+        <span class="s">'ROL_ASIGNADO'</span>,<span class="s">'ROL_REVOCADO'</span>,<span class="s">'PERMISO_ASIGNADO'</span>,<span class="s">'PERMISO_REVOCADO'</span>))
+);
+<span class="k">GO</span>
+
+<span class="k">CREATE</span> <span class="k">TABLE</span> Seguridad.ConfiguracionDBMS (
+    IdConfiguracion    <span class="k">INT</span> <span class="k">IDENTITY</span>(1,1) <span class="k">NOT</span> <span class="k">NULL</span>,
+    Parametro          <span class="k">VARCHAR</span>(100) <span class="k">NOT</span> <span class="k">NULL</span>,
+    ValorConfigurado   <span class="k">VARCHAR</span>(500) <span class="k">NOT</span> <span class="k">NULL</span>,
+    ValorRecomendado   <span class="k">VARCHAR</span>(500) <span class="k">NULL</span>,
+    Descripcion        <span class="k">VARCHAR</span>(500) <span class="k">NULL</span>,
+    Criticidad         <span class="k">VARCHAR</span>(15) <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> <span class="s">'MEDIA'</span>,
+    FechaRevision      DATETIME2 <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> SYSDATETIME(),
+    RevisadoPor        <span class="k">INT</span> <span class="k">NULL</span>,
+    Activo             <span class="k">BIT</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 1,
+
+    <span class="k">CONSTRAINT</span> PK_ConfiguracionDBMS <span class="k">PRIMARY</span> <span class="k">KEY</span> (IdConfiguracion),
+    <span class="k">CONSTRAINT</span> UQ_ConfiguracionDBMS_Parametro <span class="k">UNIQUE</span> (Parametro),
+    <span class="k">CONSTRAINT</span> FK_ConfiguracionDBMS_Usuario <span class="k">FOREIGN</span> <span class="k">KEY</span> (RevisadoPor) <span class="k">REFERENCES</span> Seguridad.Usuario(IdUsuario),
+    <span class="k">CONSTRAINT</span> CHK_ConfiguracionDBMS_Criticidad <span class="k">CHECK</span> (Criticidad IN (<span class="s">'BAJA'</span>,<span class="s">'MEDIA'</span>,<span class="s">'ALTA'</span>,<span class="s">'CRITICA'</span>))
+);
+<span class="k">GO</span>
+
+<span class="k">INSERT</span> <span class="k">INTO</span> Seguridad.ConfiguracionDBMS
+(Parametro,ValorConfigurado,ValorRecomendado,Descripcion,Criticidad)
+<span class="k">VALUES</span>
+(<span class="s">'AUDITORIA_DBMS'</span>,<span class="s">'IMPLEMENTAR'</span>,<span class="s">'SQL SERVER AUDIT'</span>,<span class="s">'Auditar accesos y eventos de seguridad del motor.'</span>,<span class="s">'ALTA'</span>),
+(<span class="s">'CIFRADO_EN_REPOSO'</span>,<span class="s">'PENDIENTE'</span>,<span class="s">'TDE'</span>,<span class="s">'Proteger archivos de datos y log mediante TDE.'</span>,<span class="s">'ALTA'</span>),
+(<span class="s">'CIFRADO_EN_TRANSITO'</span>,<span class="s">'PENDIENTE'</span>,<span class="s">'TLS'</span>,<span class="s">'Proteger conexiones cliente-servidor.'</span>,<span class="s">'ALTA'</span>),
+(<span class="s">'BACKUP_CIFRADO'</span>,<span class="s">'PENDIENTE'</span>,<span class="s">'SI'</span>,<span class="s">'Cifrar copias de seguridad.'</span>,<span class="s">'ALTA'</span>),
+(<span class="s">'MINIMO_PRIVILEGIO'</span>,<span class="s">'IMPLEMENTAR'</span>,<span class="s">'SI'</span>,<span class="s">'Aplicar minimo privilegio a cuentas y roles.'</span>,<span class="s">'CRITICA'</span>),
+(<span class="s">'CUENTA_SA'</span>,<span class="s">'RESTRINGIR'</span>,<span class="s">'NO_USO_APLICACION'</span>,<span class="s">'No utilizar cuentas administrativas desde aplicaciones.'</span>,<span class="s">'CRITICA'</span>);
+<span class="k">GO</span>
+
+<span class="k">CREATE</span> <span class="k">TABLE</span> Seguridad.CredencialDBMS (
+    IdCredencial            <span class="k">INT</span> <span class="k">IDENTITY</span>(1,1) <span class="k">NOT</span> <span class="k">NULL</span>,
+    NombreCredencial        <span class="k">VARCHAR</span>(120) <span class="k">NOT</span> <span class="k">NULL</span>,
+    TipoCredencial          <span class="k">VARCHAR</span>(30) <span class="k">NOT</span> <span class="k">NULL</span>,
+    IdentificadorExterno    <span class="k">VARCHAR</span>(250) <span class="k">NULL</span>,
+    FechaVigenciaInicio     DATETIME2 <span class="k">NULL</span>,
+    FechaVigenciaFin        DATETIME2 <span class="k">NULL</span>,
+    Estado                  <span class="k">VARCHAR</span>(15) <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> <span class="s">'ACTIVA'</span>,
+    Observacion              <span class="k">VARCHAR</span>(500) <span class="k">NULL</span>,
+    FechaRegistro            DATETIME2 <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> SYSDATETIME(),
+
+    <span class="k">CONSTRAINT</span> PK_CredencialDBMS <span class="k">PRIMARY</span> <span class="k">KEY</span> (IdCredencial),
+    <span class="k">CONSTRAINT</span> UQ_CredencialDBMS_Nombre <span class="k">UNIQUE</span> (NombreCredencial),
+    <span class="k">CONSTRAINT</span> CHK_CredencialDBMS_Tipo <span class="k">CHECK</span> (TipoCredencial IN
+        (<span class="s">'CERTIFICADO'</span>,<span class="s">'CLAVE_MAESTRA'</span>,<span class="s">'CREDENCIAL'</span>,<span class="s">'LLAVE_ENCRIPTACION'</span>,<span class="s">'OTRO'</span>)),
+    <span class="k">CONSTRAINT</span> CHK_CredencialDBMS_Estado <span class="k">CHECK</span> (Estado IN (<span class="s">'ACTIVA'</span>,<span class="s">'EXPIRADA'</span>,<span class="s">'REVOCADA'</span>,<span class="s">'PENDIENTE'</span>))
+);
+<span class="k">GO</span>
+
+<span class="c">-- Indices</span>
+<span class="k">CREATE</span> <span class="k">INDEX</span> IX_PasswordHistorial_Usuario_Fecha
+<span class="k">ON</span> Seguridad.PasswordHistorial(IdUsuario,FechaCreacion DESC);
+<span class="k">GO</span>
+
+<span class="c">-- NOTA: las dos siguientes hacen referencia a Seguridad.TokenAutenticacion y</span>
+<span class="c">-- Seguridad.FactorAutenticacion, tablas de MFA que el script NO llega a crear</span>
+<span class="c">-- (quedan &quot;preparadas para configurarse&quot;, como advierte la introduccion).</span>
+<span class="c">-- Comentalas o crea antes esas dos tablas si vas a ejecutar el script completo.</span>
+<span class="c">-- CREATE INDEX IX_TokenAutenticacion_Usuario</span>
+<span class="c">-- ON Seguridad.TokenAutenticacion(IdUsuario,Revocado,FechaExpiracion);</span>
+<span class="c">-- GO</span>
+<span class="c">-- CREATE INDEX IX_FactorAutenticacion_Usuario</span>
+<span class="c">-- ON Seguridad.FactorAutenticacion(IdUsuario,Activo);</span>
+<span class="c">-- GO</span>
+
+<span class="k">CREATE</span> <span class="k">INDEX</span> IX_Sesion_Usuario_Estado
+<span class="k">ON</span> Seguridad.Sesion(IdUsuario,Estado,FechaExpiracion);
+<span class="k">GO</span>
+
+<span class="k">CREATE</span> <span class="k">INDEX</span> IX_PoliticaAcceso_Rol
+<span class="k">ON</span> Seguridad.PoliticaAcceso(IdRol,Activa,Prioridad);
+<span class="k">GO</span>
+
+<span class="k">CREATE</span> <span class="k">INDEX</span> IX_UsuarioPolitica_Usuario
+<span class="k">ON</span> Seguridad.UsuarioPoliticaAcceso(IdUsuario,Activa,FechaFin);
+<span class="k">GO</span>
+
+<span class="k">CREATE</span> <span class="k">INDEX</span> IX_AuditoriaSeguridad_Fecha
+<span class="k">ON</span> Seguridad.AuditoriaSeguridad(FechaHora DESC);
+<span class="k">GO</span>
+
+<span class="k">CREATE</span> <span class="k">INDEX</span> IX_AuditoriaSeguridad_Usuario
+<span class="k">ON</span> Seguridad.AuditoriaSeguridad(IdUsuario,FechaHora DESC);
+<span class="k">GO</span>
+
+<span class="k">CREATE</span> <span class="k">INDEX</span> IX_AuditoriaSeguridad_Tipo
+<span class="k">ON</span> Seguridad.AuditoriaSeguridad(TipoEvento,FechaHora DESC);
+<span class="k">GO</span>
+
+<span class="k">CREATE</span> <span class="k">INDEX</span> IX_AuditoriaDatos_Fecha
+<span class="k">ON</span> Seguridad.AuditoriaDatos(FechaHora DESC);
+<span class="k">GO</span>
+
+<span class="k">CREATE</span> <span class="k">INDEX</span> IX_HistorialAutorizacion_Usuario
+<span class="k">ON</span> Seguridad.HistorialAutorizacion(IdUsuarioObjetivo,FechaHora DESC);
+<span class="k">GO</span>
+
+<span class="c">-- =====================================================================</span>
+<span class="c">-- VISTAS</span>
+<span class="c">-- =====================================================================</span>
+
+<span class="k">CREATE</span> OR <span class="k">ALTER</span> <span class="k">VIEW</span> Seguridad.V_UsuariosSeguridad
+<span class="k">AS</span>
+<span class="k">SELECT</span>
+    u.IdUsuario,
+    u.NombreUsuario,
+    u.Estado,
+    u.Bloqueado,
+    u.IntentosFallidos,
+    u.FechaUltimoAcceso,
+    u.FechaCreacion,
+    CASE
+        WHEN u.Bloqueado=1 OR u.Estado=<span class="s">'BLOQUEADO'</span> THEN <span class="s">'BLOQUEADO'</span>
+        WHEN u.Estado&lt;&gt;<span class="s">'ACTIVO'</span> THEN u.Estado
+        WHEN u.IntentosFallidos&gt;0 THEN <span class="s">'ACTIVO_CON_INTENTOS'</span>
+        ELSE <span class="s">'ACTIVO'</span>
+    <span class="k">END</span> <span class="k">AS</span> EstadoSeguridad,
+    COUNT(DISTINCT ur.IdRol) <span class="k">AS</span> RolesActivos
+<span class="k">FROM</span> Seguridad.Usuario u
+LEFT JOIN Seguridad.UsuarioRol ur
+  <span class="k">ON</span> ur.IdUsuario=u.IdUsuario
+ AND ur.Activo=1
+ AND (ur.FechaFin IS <span class="k">NULL</span> OR ur.FechaFin&gt;=CAST(SYSDATETIME() <span class="k">AS</span> <span class="k">DATE</span>))
+GROUP BY
+    u.IdUsuario,u.NombreUsuario,u.Estado,u.Bloqueado,
+    u.IntentosFallidos,u.FechaUltimoAcceso,u.FechaCreacion;
+<span class="k">GO</span>
+
+<span class="k">CREATE</span> OR <span class="k">ALTER</span> <span class="k">VIEW</span> Seguridad.V_SesionesActivas
+<span class="k">AS</span>
+<span class="k">SELECT</span>
+    s.IdSesion,s.IdUsuario,u.NombreUsuario,s.FechaInicio,
+    s.FechaUltimaActividad,s.FechaExpiracion,s.DireccionIP,
+    s.Dispositivo,s.UserAgent
+<span class="k">FROM</span> Seguridad.Sesion s
+JOIN Seguridad.Usuario u <span class="k">ON</span> u.IdUsuario=s.IdUsuario
+<span class="k">WHERE</span> s.Estado=<span class="s">'ACTIVA'</span>
+  AND s.Revocada=0
+  AND s.FechaExpiracion&gt;SYSDATETIME();
+<span class="k">GO</span>
+
+<span class="k">CREATE</span> OR <span class="k">ALTER</span> <span class="k">VIEW</span> Seguridad.V_EventosSeguridadRecientes
+<span class="k">AS</span>
+<span class="k">SELECT</span> TOP (1000)
+    a.IdAuditoria,a.FechaHora,a.IdUsuario,
+    COALESCE(a.NombreUsuario,u.NombreUsuario) <span class="k">AS</span> NombreUsuario,
+    a.TipoEvento,a.Resultado,a.Modulo,a.Accion,
+    a.DireccionIP,a.Objeto,a.Detalle
+<span class="k">FROM</span> Seguridad.AuditoriaSeguridad a
+LEFT JOIN Seguridad.Usuario u <span class="k">ON</span> u.IdUsuario=a.IdUsuario
+ORDER BY a.FechaHora DESC;
+<span class="k">GO</span>
+
+<span class="c">-- =====================================================================</span>
+<span class="c">-- PROCEDIMIENTOS DE AUDITORIA</span>
+<span class="c">-- =====================================================================</span>
+
+<span class="k">CREATE</span> OR <span class="k">ALTER</span> <span class="k">PROCEDURE</span> Seguridad.SP_RegistrarAuditoriaSeguridad
+    @IdUsuario <span class="k">INT</span>=<span class="k">NULL</span>,
+    @NombreUsuario <span class="k">VARCHAR</span>(60)=<span class="k">NULL</span>,
+    @TipoEvento <span class="k">VARCHAR</span>(35),
+    @Resultado <span class="k">VARCHAR</span>(15),
+    @Modulo <span class="k">VARCHAR</span>(50)=<span class="k">NULL</span>,
+    @Accion <span class="k">VARCHAR</span>(80)=<span class="k">NULL</span>,
+    @DireccionIP <span class="k">VARCHAR</span>(45)=<span class="k">NULL</span>,
+    @UserAgent <span class="k">NVARCHAR</span>(500)=<span class="k">NULL</span>,
+    @IdSesion UNIQUEIDENTIFIER=<span class="k">NULL</span>,
+    @Objeto <span class="k">VARCHAR</span>(150)=<span class="k">NULL</span>,
+    @Detalle <span class="k">NVARCHAR</span>(2000)=<span class="k">NULL</span>,
+    @DatosAntes <span class="k">NVARCHAR</span>(MAX)=<span class="k">NULL</span>,
+    @DatosDespues <span class="k">NVARCHAR</span>(MAX)=<span class="k">NULL</span>,
+    @CorrelationId UNIQUEIDENTIFIER=<span class="k">NULL</span>
+<span class="k">AS</span>
+<span class="k">BEGIN</span>
+    <span class="k">SET</span> NOCOUNT <span class="k">ON</span>;
+
+    <span class="k">INSERT</span> <span class="k">INTO</span> Seguridad.AuditoriaSeguridad
+    (IdUsuario,NombreUsuario,TipoEvento,Resultado,Modulo,Accion,
+     DireccionIP,UserAgent,IdSesion,Objeto,Detalle,DatosAntes,
+     DatosDespues,CorrelationId)
+    <span class="k">VALUES</span>
+    (@IdUsuario,@NombreUsuario,@TipoEvento,@Resultado,@Modulo,@Accion,
+     @DireccionIP,@UserAgent,@IdSesion,@Objeto,@Detalle,@DatosAntes,
+     @DatosDespues,@CorrelationId);
+<span class="k">END</span>;
+<span class="k">GO</span>
+
+<span class="k">CREATE</span> OR <span class="k">ALTER</span> <span class="k">PROCEDURE</span> Seguridad.SP_RegistrarAuditoriaDatos
+    @IdUsuario <span class="k">INT</span>=<span class="k">NULL</span>,
+    @IdSesion UNIQUEIDENTIFIER=<span class="k">NULL</span>,
+    @Operacion <span class="k">CHAR</span>(1),
+    @EsquemaObjeto SYSNAME,
+    @NombreObjeto SYSNAME,
+    @ClaveRegistro <span class="k">NVARCHAR</span>(500)=<span class="k">NULL</span>,
+    @DatosAntes <span class="k">NVARCHAR</span>(MAX)=<span class="k">NULL</span>,
+    @DatosDespues <span class="k">NVARCHAR</span>(MAX)=<span class="k">NULL</span>,
+    @DireccionIP <span class="k">VARCHAR</span>(45)=<span class="k">NULL</span>,
+    @CorrelationId UNIQUEIDENTIFIER=<span class="k">NULL</span>
+<span class="k">AS</span>
+<span class="k">BEGIN</span>
+    <span class="k">SET</span> NOCOUNT <span class="k">ON</span>;
+
+    <span class="k">INSERT</span> <span class="k">INTO</span> Seguridad.AuditoriaDatos
+    (IdUsuario,IdSesion,Operacion,EsquemaObjeto,NombreObjeto,
+     ClaveRegistro,DatosAntes,DatosDespues,DireccionIP,CorrelationId)
+    <span class="k">VALUES</span>
+    (@IdUsuario,@IdSesion,@Operacion,@EsquemaObjeto,@NombreObjeto,
+     @ClaveRegistro,@DatosAntes,@DatosDespues,@DireccionIP,@CorrelationId);
+<span class="k">END</span>;
+<span class="k">GO</span>
+
+<span class="c">-- ---------------------------------------------------------------------</span>
+<span class="c">-- CONTEXTO DE SESION PARA IDENTIFICAR AL USUARIO DE LA APP</span>
+<span class="c">--</span>
+<span class="c">-- La aplicacion debe ejecutar al iniciar una sesion:</span>
+<span class="c">-- EXEC sys.sp_set_session_context</span>
+<span class="c">--      @key=N&#x27;IdUsuario&#x27;, @value=&lt;IdUsuario&gt;;</span>
+<span class="c">-- ---------------------------------------------------------------------</span>
+
+<span class="k">PRINT</span> <span class="s">'=========================================================='</span>;
+<span class="k">PRINT</span> <span class="s">' SEGURIDAD AVANZADA IMPLEMENTADA'</span>;
+<span class="k">PRINT</span> <span class="s">' Auditoria, autenticacion, MFA, sesiones y politicas'</span>;
+<span class="k">PRINT</span> <span class="s">' de acceso agregadas sin modificar el modelo RBAC.'</span>;
+<span class="k">PRINT</span> <span class="s">'=========================================================='</span>;
+<span class="k">GO</span>
+
+/* ===== SEGURIDAD CORPORATIVA V2: EXTENSIONES ===== */
+
+/* 1. Dispositivos confiables */
+<span class="k">IF</span> OBJECT_ID(<span class="s">'Seguridad.Dispositivo'</span>,<span class="s">'U'</span>) IS <span class="k">NULL</span>
+<span class="k">BEGIN</span>
+ <span class="k">CREATE</span> <span class="k">TABLE</span> Seguridad.Dispositivo(
+  IdDispositivo BIGINT <span class="k">IDENTITY</span>(1,1) <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">CONSTRAINT</span> PK_Dispositivo <span class="k">PRIMARY</span> <span class="k">KEY</span>,
+  NombreDispositivo <span class="k">VARCHAR</span>(150) <span class="k">NULL</span>, HuellaDispositivo VARBINARY(256) <span class="k">NULL</span>,
+  TipoDispositivo <span class="k">VARCHAR</span>(30) <span class="k">NULL</span>, SistemaOperativo <span class="k">VARCHAR</span>(100) <span class="k">NULL</span>,
+  Navegador <span class="k">VARCHAR</span>(150) <span class="k">NULL</span>, FechaRegistro DATETIME2 <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> SYSDATETIME(),
+  UltimoAcceso DATETIME2 <span class="k">NULL</span>,
+  Confiable <span class="k">BIT</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 0,
+  Activo <span class="k">BIT</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 1, Revocado <span class="k">BIT</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 0, FechaRevocacion DATETIME2 <span class="k">NULL</span>,
+  <span class="k">CONSTRAINT</span> CHK_Dispositivo_Tipo <span class="k">CHECK</span>(TipoDispositivo IS <span class="k">NULL</span> OR TipoDispositivo
+    IN(<span class="s">'DESKTOP'</span>,<span class="s">'LAPTOP'</span>,<span class="s">'TABLET'</span>,<span class="s">'MOVIL'</span>,<span class="s">'SERVIDOR'</span>,<span class="s">'OTRO'</span>))
+ );
+<span class="k">END</span>;
+<span class="k">GO</span>
+
+<span class="k">IF</span> OBJECT_ID(<span class="s">'Seguridad.UsuarioDispositivo'</span>,<span class="s">'U'</span>) IS <span class="k">NULL</span>
+<span class="k">BEGIN</span>
+ <span class="k">CREATE</span> <span class="k">TABLE</span> Seguridad.UsuarioDispositivo(
+  IdUsuarioDispositivo BIGINT <span class="k">IDENTITY</span>(1,1) <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">CONSTRAINT</span> PK_UsuarioDispositivo <span class="k">PRIMARY</span> <span class="k">KEY</span>,
+  IdUsuario <span class="k">INT</span> <span class="k">NOT</span> <span class="k">NULL</span>, IdDispositivo BIGINT <span class="k">NOT</span> <span class="k">NULL</span>,
+  FechaVinculacion DATETIME2 <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> SYSDATETIME(), UltimaActividad DATETIME2 <span class="k">NULL</span>,
+  Activo <span class="k">BIT</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 1,
+  <span class="k">CONSTRAINT</span> UQ_UsuarioDispositivo <span class="k">UNIQUE</span>(IdUsuario,IdDispositivo),
+  <span class="k">CONSTRAINT</span> FK_UsuarioDispositivo_Usuario <span class="k">FOREIGN</span> <span class="k">KEY</span>(IdUsuario) <span class="k">REFERENCES</span> Seguridad.Usuario(IdUsuario),
+  <span class="k">CONSTRAINT</span> FK_UsuarioDispositivo_Dispositivo <span class="k">FOREIGN</span> <span class="k">KEY</span>(IdDispositivo) <span class="k">REFERENCES</span> Seguridad.Dispositivo(IdDispositivo)
+ );
+<span class="k">END</span>;
+<span class="k">GO</span>
+
+/* 2. Intentos de autenticacion */
+<span class="k">IF</span> OBJECT_ID(<span class="s">'Seguridad.IntentoAutenticacion'</span>,<span class="s">'U'</span>) IS <span class="k">NULL</span>
+<span class="k">BEGIN</span>
+ <span class="k">CREATE</span> <span class="k">TABLE</span> Seguridad.IntentoAutenticacion(
+  IdIntento BIGINT <span class="k">IDENTITY</span>(1,1) <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">CONSTRAINT</span> PK_IntentoAutenticacion <span class="k">PRIMARY</span> <span class="k">KEY</span>,
+  IdUsuario <span class="k">INT</span> <span class="k">NULL</span>, NombreUsuario <span class="k">VARCHAR</span>(60) <span class="k">NULL</span>, FechaHora DATETIME2 <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> SYSDATETIME(),
+  Resultado <span class="k">VARCHAR</span>(20) <span class="k">NOT</span> <span class="k">NULL</span>, Motivo <span class="k">VARCHAR</span>(300) <span class="k">NULL</span>, DireccionIP <span class="k">VARCHAR</span>(45) <span class="k">NULL</span>,
+  UserAgent <span class="k">NVARCHAR</span>(500) <span class="k">NULL</span>, IdSesion UNIQUEIDENTIFIER <span class="k">NULL</span>, CorrelationId UNIQUEIDENTIFIER <span class="k">NULL</span>,
+  <span class="k">CONSTRAINT</span> FK_IntentoAutenticacion_Usuario <span class="k">FOREIGN</span> <span class="k">KEY</span>(IdUsuario) <span class="k">REFERENCES</span> Seguridad.Usuario(IdUsuario),
+  <span class="k">CONSTRAINT</span> CHK_IntentoAutenticacion_Resultado <span class="k">CHECK</span>(Resultado
+    IN(<span class="s">'EXITOSO'</span>,<span class="s">'FALLIDO'</span>,<span class="s">'BLOQUEADO'</span>,<span class="s">'MFA_FALLIDO'</span>,<span class="s">'MFA_EXITOSO'</span>))
+ );
+<span class="k">END</span>;
+<span class="k">GO</span>
+
+/* 3. ABAC: alcances contextuales */
+<span class="k">IF</span> OBJECT_ID(<span class="s">'Seguridad.AlcanceAcceso'</span>,<span class="s">'U'</span>) IS <span class="k">NULL</span>
+<span class="k">BEGIN</span>
+ <span class="k">CREATE</span> <span class="k">TABLE</span> Seguridad.AlcanceAcceso(
+  IdAlcance <span class="k">INT</span> <span class="k">IDENTITY</span>(1,1) <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">CONSTRAINT</span> PK_AlcanceAcceso <span class="k">PRIMARY</span> <span class="k">KEY</span>,
+  NombreAlcance <span class="k">VARCHAR</span>(100) <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">CONSTRAINT</span> UQ_AlcanceAcceso_Nombre <span class="k">UNIQUE</span>,
+  TipoAlcance <span class="k">VARCHAR</span>(30) <span class="k">NOT</span> <span class="k">NULL</span>, Descripcion <span class="k">VARCHAR</span>(500) <span class="k">NULL</span>,
+  Recurso <span class="k">VARCHAR</span>(150) <span class="k">NULL</span>, ExpresionCondicion <span class="k">NVARCHAR</span>(2000) <span class="k">NULL</span>,
+  Activo <span class="k">BIT</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 1, FechaCreacion DATETIME2 <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> SYSDATETIME(),
+  <span class="k">CONSTRAINT</span> CHK_AlcanceAcceso_Tipo <span class="k">CHECK</span>(TipoAlcance
+    IN(<span class="s">'PROPIO'</span>,<span class="s">'PROGRAMA'</span>,<span class="s">'FACULTAD'</span>,<span class="s">'ASESORADO'</span>,<span class="s">'ASIGNADO'</span>,<span class="s">'INSTITUCIONAL'</span>,<span class="s">'PERSONALIZADO'</span>))
+ );
+<span class="k">END</span>;
+<span class="k">GO</span>
+
+<span class="k">IF</span> OBJECT_ID(<span class="s">'Seguridad.RolAlcance'</span>,<span class="s">'U'</span>) IS <span class="k">NULL</span>
+<span class="k">BEGIN</span>
+ <span class="k">CREATE</span> <span class="k">TABLE</span> Seguridad.RolAlcance(
+  IdRolAlcance BIGINT <span class="k">IDENTITY</span>(1,1) <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">CONSTRAINT</span> PK_RolAlcance <span class="k">PRIMARY</span> <span class="k">KEY</span>,
+  IdRol <span class="k">SMALLINT</span> <span class="k">NOT</span> <span class="k">NULL</span>, IdAlcance <span class="k">INT</span> <span class="k">NOT</span> <span class="k">NULL</span>, FechaInicio DATETIME2 <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> SYSDATETIME(),
+  FechaFin DATETIME2 <span class="k">NULL</span>, Activo <span class="k">BIT</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 1,
+  <span class="k">CONSTRAINT</span> UQ_RolAlcance <span class="k">UNIQUE</span>(IdRol,IdAlcance),
+  <span class="k">CONSTRAINT</span> FK_RolAlcance_Rol <span class="k">FOREIGN</span> <span class="k">KEY</span>(IdRol) <span class="k">REFERENCES</span> Seguridad.Rol(IdRol),
+  <span class="k">CONSTRAINT</span> FK_RolAlcance_Alcance <span class="k">FOREIGN</span> <span class="k">KEY</span>(IdAlcance) <span class="k">REFERENCES</span> Seguridad.AlcanceAcceso(IdAlcance),
+  <span class="k">CONSTRAINT</span> CHK_RolAlcance_Fechas <span class="k">CHECK</span>(FechaFin IS <span class="k">NULL</span> OR FechaFin&gt;=FechaInicio)
+ );
+<span class="k">END</span>;
+<span class="k">GO</span>
+
+<span class="k">IF</span> OBJECT_ID(<span class="s">'Seguridad.UsuarioAlcance'</span>,<span class="s">'U'</span>) IS <span class="k">NULL</span>
+<span class="k">BEGIN</span>
+ <span class="k">CREATE</span> <span class="k">TABLE</span> Seguridad.UsuarioAlcance(
+  IdUsuarioAlcance BIGINT <span class="k">IDENTITY</span>(1,1) <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">CONSTRAINT</span> PK_UsuarioAlcance <span class="k">PRIMARY</span> <span class="k">KEY</span>,
+  IdUsuario <span class="k">INT</span> <span class="k">NOT</span> <span class="k">NULL</span>, IdAlcance <span class="k">INT</span> <span class="k">NOT</span> <span class="k">NULL</span>, FechaInicio DATETIME2 <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> SYSDATETIME(),
+  FechaFin DATETIME2 <span class="k">NULL</span>, Activo <span class="k">BIT</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 1, Motivo <span class="k">VARCHAR</span>(500) <span class="k">NULL</span>,
+  <span class="k">CONSTRAINT</span> UQ_UsuarioAlcance <span class="k">UNIQUE</span>(IdUsuario,IdAlcance),
+  <span class="k">CONSTRAINT</span> FK_UsuarioAlcance_Usuario <span class="k">FOREIGN</span> <span class="k">KEY</span>(IdUsuario) <span class="k">REFERENCES</span> Seguridad.Usuario(IdUsuario),
+  <span class="k">CONSTRAINT</span> FK_UsuarioAlcance_Alcance <span class="k">FOREIGN</span> <span class="k">KEY</span>(IdAlcance) <span class="k">REFERENCES</span> Seguridad.AlcanceAcceso(IdAlcance),
+  <span class="k">CONSTRAINT</span> CHK_UsuarioAlcance_Fechas <span class="k">CHECK</span>(FechaFin IS <span class="k">NULL</span> OR FechaFin&gt;=FechaInicio)
+ );
+<span class="k">END</span>;
+<span class="k">GO</span>
+
+/* 4. Segregacion de funciones */
+<span class="k">IF</span> OBJECT_ID(<span class="s">'Seguridad.ReglaSegregacion'</span>,<span class="s">'U'</span>) IS <span class="k">NULL</span>
+<span class="k">BEGIN</span>
+ <span class="k">CREATE</span> <span class="k">TABLE</span> Seguridad.ReglaSegregacion(
+  IdReglaSegregacion <span class="k">INT</span> <span class="k">IDENTITY</span>(1,1) <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">CONSTRAINT</span> PK_ReglaSegregacion <span class="k">PRIMARY</span> <span class="k">KEY</span>,
+  NombreRegla <span class="k">VARCHAR</span>(150) <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">CONSTRAINT</span> UQ_ReglaSegregacion_Nombre <span class="k">UNIQUE</span>,
+  Descripcion <span class="k">VARCHAR</span>(500) <span class="k">NULL</span>, Severidad <span class="k">VARCHAR</span>(15) <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> <span class="s">'ALTA'</span>,
+  Activa <span class="k">BIT</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 1, FechaCreacion DATETIME2 <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> SYSDATETIME(),
+  <span class="k">CONSTRAINT</span> CHK_ReglaSegregacion_Severidad <span class="k">CHECK</span>(Severidad IN(<span class="s">'BAJA'</span>,<span class="s">'MEDIA'</span>,<span class="s">'ALTA'</span>,<span class="s">'CRITICA'</span>))
+ );
+<span class="k">END</span>;
+<span class="k">GO</span>
+
+<span class="k">IF</span> OBJECT_ID(<span class="s">'Seguridad.ReglaSegregacionRol'</span>,<span class="s">'U'</span>) IS <span class="k">NULL</span>
+<span class="k">BEGIN</span>
+ <span class="k">CREATE</span> <span class="k">TABLE</span> Seguridad.ReglaSegregacionRol(
+  IdReglaSegregacionRol BIGINT <span class="k">IDENTITY</span>(1,1) <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">CONSTRAINT</span> PK_ReglaSegregacionRol <span class="k">PRIMARY</span> <span class="k">KEY</span>,
+  IdReglaSegregacion <span class="k">INT</span> <span class="k">NOT</span> <span class="k">NULL</span>, IdRol <span class="k">SMALLINT</span> <span class="k">NOT</span> <span class="k">NULL</span>, TipoRol <span class="k">VARCHAR</span>(15) <span class="k">NOT</span> <span class="k">NULL</span>,
+  <span class="k">CONSTRAINT</span> UQ_ReglaSegregacionRol <span class="k">UNIQUE</span>(IdReglaSegregacion,IdRol,TipoRol),
+  <span class="k">CONSTRAINT</span> FK_ReglaSegregacionRol_Regla <span class="k">FOREIGN</span> <span class="k">KEY</span>(IdReglaSegregacion)
+    <span class="k">REFERENCES</span> Seguridad.ReglaSegregacion(IdReglaSegregacion),
+  <span class="k">CONSTRAINT</span> FK_ReglaSegregacionRol_Rol <span class="k">FOREIGN</span> <span class="k">KEY</span>(IdRol) <span class="k">REFERENCES</span> Seguridad.Rol(IdRol),
+  <span class="k">CONSTRAINT</span> CHK_ReglaSegregacionRol_Tipo <span class="k">CHECK</span>(TipoRol IN(<span class="s">'ORIGEN'</span>,<span class="s">'CONFLICTO'</span>))
+ );
+<span class="k">END</span>;
+<span class="k">GO</span>
+
+/* 5. Clasificacion de datos */
+<span class="k">IF</span> OBJECT_ID(<span class="s">'Seguridad.ClasificacionDato'</span>,<span class="s">'U'</span>) IS <span class="k">NULL</span>
+<span class="k">BEGIN</span>
+ <span class="k">CREATE</span> <span class="k">TABLE</span> Seguridad.ClasificacionDato(
+  IdClasificacion <span class="k">TINYINT</span> <span class="k">IDENTITY</span>(1,1) <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">CONSTRAINT</span> PK_ClasificacionDato <span class="k">PRIMARY</span> <span class="k">KEY</span>,
+  NombreClasificacion <span class="k">VARCHAR</span>(30) <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">CONSTRAINT</span> UQ_ClasificacionDato_Nombre <span class="k">UNIQUE</span>,
+  Nivel <span class="k">TINYINT</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">CONSTRAINT</span> UQ_ClasificacionDato_Nivel <span class="k">UNIQUE</span>,
+  Descripcion <span class="k">VARCHAR</span>(500) <span class="k">NULL</span>, RequiereCifrado <span class="k">BIT</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 0,
+  RequiereAuditoria <span class="k">BIT</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 0, Activo <span class="k">BIT</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 1,
+  <span class="k">CONSTRAINT</span> CHK_ClasificacionDato_Nivel <span class="k">CHECK</span>(Nivel BETWEEN 1 AND 5)
+ );
+<span class="k">END</span>;
+<span class="k">GO</span>
+<span class="k">IF</span> <span class="k">NOT</span> EXISTS (<span class="k">SELECT</span> 1 <span class="k">FROM</span> Seguridad.ClasificacionDato)
+<span class="k">INSERT</span> <span class="k">INTO</span> Seguridad.ClasificacionDato(NombreClasificacion,Nivel,Descripcion,RequiereCifrado,RequiereAuditoria) <span class="k">VALUES</span>
+(<span class="s">'PUBLICO'</span>,1,<span class="s">'Informacion de libre consulta.'</span>,0,0),
+(<span class="s">'INTERNO'</span>,2,<span class="s">'Informacion de uso institucional.'</span>,0,1),
+(<span class="s">'CONFIDENCIAL'</span>,3,<span class="s">'Informacion academica o administrativa restringida.'</span>,1,1),
+(<span class="s">'RESTRINGIDO'</span>,4,<span class="s">'Informacion personal o sensible.'</span>,1,1),
+(<span class="s">'CRITICO'</span>,5,<span class="s">'Informacion critica para seguridad o continuidad.'</span>,1,1);
+<span class="k">GO</span>
+
+<span class="k">IF</span> OBJECT_ID(<span class="s">'Seguridad.ObjetoClasificado'</span>,<span class="s">'U'</span>) IS <span class="k">NULL</span>
+<span class="k">BEGIN</span>
+ <span class="k">CREATE</span> <span class="k">TABLE</span> Seguridad.ObjetoClasificado(
+  IdObjetoClasificado BIGINT <span class="k">IDENTITY</span>(1,1) <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">CONSTRAINT</span> PK_ObjetoClasificado <span class="k">PRIMARY</span> <span class="k">KEY</span>,
+  IdClasificacion <span class="k">TINYINT</span> <span class="k">NOT</span> <span class="k">NULL</span>, EsquemaObjeto SYSNAME <span class="k">NOT</span> <span class="k">NULL</span>, NombreObjeto SYSNAME <span class="k">NOT</span> <span class="k">NULL</span>,
+  NombreColumna SYSNAME <span class="k">NULL</span>, Descripcion <span class="k">VARCHAR</span>(500) <span class="k">NULL</span>, Activo <span class="k">BIT</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 1,
+  <span class="k">CONSTRAINT</span> UQ_ObjetoClasificado <span class="k">UNIQUE</span>(EsquemaObjeto,NombreObjeto,NombreColumna),
+  <span class="k">CONSTRAINT</span> FK_ObjetoClasificado_Clasificacion <span class="k">FOREIGN</span> <span class="k">KEY</span>(IdClasificacion)
+    <span class="k">REFERENCES</span> Seguridad.ClasificacionDato(IdClasificacion)
+ );
+<span class="k">END</span>;
+<span class="k">GO</span>
+
+/* 6. Retencion */
+<span class="k">IF</span> OBJECT_ID(<span class="s">'Seguridad.PoliticaRetencion'</span>,<span class="s">'U'</span>) IS <span class="k">NULL</span>
+<span class="k">BEGIN</span>
+ <span class="k">CREATE</span> <span class="k">TABLE</span> Seguridad.PoliticaRetencion(
+  IdPoliticaRetencion <span class="k">INT</span> <span class="k">IDENTITY</span>(1,1) <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">CONSTRAINT</span> PK_PoliticaRetencion <span class="k">PRIMARY</span> <span class="k">KEY</span>,
+  TipoAuditoria <span class="k">VARCHAR</span>(40) <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">CONSTRAINT</span> UQ_PoliticaRetencion_Tipo <span class="k">UNIQUE</span>,
+  DiasRetencion <span class="k">INT</span> <span class="k">NOT</span> <span class="k">NULL</span>, DiasArchivado <span class="k">INT</span> <span class="k">NULL</span>,
+  EliminacionPermitida <span class="k">BIT</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 0,
+  Descripcion <span class="k">VARCHAR</span>(500) <span class="k">NULL</span>, Activa <span class="k">BIT</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 1,
+  FechaCreacion DATETIME2 <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> SYSDATETIME(),
+  <span class="k">CONSTRAINT</span> CHK_PoliticaRetencion_Dias <span class="k">CHECK</span>(DiasRetencion&gt;=1),
+  <span class="k">CONSTRAINT</span> CHK_PoliticaRetencion_Archivado <span class="k">CHECK</span>(DiasArchivado IS <span class="k">NULL</span> OR DiasArchivado&gt;=DiasRetencion)
+ );
+<span class="k">END</span>;
+<span class="k">GO</span>
+<span class="k">IF</span> <span class="k">NOT</span> EXISTS (<span class="k">SELECT</span> 1 <span class="k">FROM</span> Seguridad.PoliticaRetencion)
+<span class="k">INSERT</span> <span class="k">INTO</span> Seguridad.PoliticaRetencion(TipoAuditoria,DiasRetencion,DiasArchivado,EliminacionPermitida,Descripcion) <span class="k">VALUES</span>
+(<span class="s">'AUDITORIA_SEGURIDAD'</span>,365,1825,0,<span class="s">'Eventos de autenticacion y autorizacion.'</span>),
+(<span class="s">'AUDITORIA_DATOS'</span>,730,1825,0,<span class="s">'Cambios de datos criticos.'</span>),
+(<span class="s">'AUTENTICACION'</span>,365,1095,0,<span class="s">'Intentos de autenticacion.'</span>),
+(<span class="s">'AUTORIZACION'</span>,730,1825,0,<span class="s">'Cambios de roles y permisos.'</span>);
+<span class="k">GO</span>
+
+/* 7. Objetos criticos e integridad */
+<span class="k">IF</span> OBJECT_ID(<span class="s">'Seguridad.ObjetoCritico'</span>,<span class="s">'U'</span>) IS <span class="k">NULL</span>
+<span class="k">BEGIN</span>
+ <span class="k">CREATE</span> <span class="k">TABLE</span> Seguridad.ObjetoCritico(
+  IdObjetoCritico <span class="k">INT</span> <span class="k">IDENTITY</span>(1,1) <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">CONSTRAINT</span> PK_ObjetoCritico <span class="k">PRIMARY</span> <span class="k">KEY</span>,
+  EsquemaObjeto SYSNAME <span class="k">NOT</span> <span class="k">NULL</span>, NombreObjeto SYSNAME <span class="k">NOT</span> <span class="k">NULL</span>, TipoObjeto <span class="k">VARCHAR</span>(30) <span class="k">NOT</span> <span class="k">NULL</span>,
+  NivelCriticidad <span class="k">VARCHAR</span>(15) <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> <span class="s">'ALTA'</span>,
+  RequiereAuditoria <span class="k">BIT</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 1, RequiereAprobacion <span class="k">BIT</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 0,
+  Activo <span class="k">BIT</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> 1,
+  <span class="k">CONSTRAINT</span> UQ_ObjetoCritico <span class="k">UNIQUE</span>(EsquemaObjeto,NombreObjeto),
+  <span class="k">CONSTRAINT</span> CHK_ObjetoCritico_Criticidad <span class="k">CHECK</span>(NivelCriticidad IN(<span class="s">'BAJA'</span>,<span class="s">'MEDIA'</span>,<span class="s">'ALTA'</span>,<span class="s">'CRITICA'</span>))
+ );
+<span class="k">END</span>;
+<span class="k">GO</span>
+
+<span class="k">IF</span> OBJECT_ID(<span class="s">'Seguridad.MonitoreoIntegridad'</span>,<span class="s">'U'</span>) IS <span class="k">NULL</span>
+<span class="k">BEGIN</span>
+ <span class="k">CREATE</span> <span class="k">TABLE</span> Seguridad.MonitoreoIntegridad(
+  IdMonitoreo BIGINT <span class="k">IDENTITY</span>(1,1) <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">CONSTRAINT</span> PK_MonitoreoIntegridad <span class="k">PRIMARY</span> <span class="k">KEY</span>,
+  FechaHora DATETIME2 <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> SYSDATETIME(), EsquemaObjeto SYSNAME <span class="k">NOT</span> <span class="k">NULL</span>, NombreObjeto SYSNAME <span class="k">NOT</span> <span class="k">NULL</span>,
+  TipoObjeto <span class="k">VARCHAR</span>(30) <span class="k">NOT</span> <span class="k">NULL</span>, HashDefinicion VARBINARY(64) <span class="k">NULL</span>, Resultado <span class="k">VARCHAR</span>(20) <span class="k">NOT</span> <span class="k">NULL</span>,
+  Detalle <span class="k">VARCHAR</span>(1000) <span class="k">NULL</span>, IdUsuario <span class="k">INT</span> <span class="k">NULL</span>,
+  <span class="k">CONSTRAINT</span> FK_MonitoreoIntegridad_Usuario <span class="k">FOREIGN</span> <span class="k">KEY</span>(IdUsuario) <span class="k">REFERENCES</span> Seguridad.Usuario(IdUsuario),
+  <span class="k">CONSTRAINT</span> CHK_MonitoreoIntegridad_Resultado <span class="k">CHECK</span>(Resultado IN(<span class="s">'OK'</span>,<span class="s">'CAMBIO_DETECTADO'</span>,<span class="s">'ERROR'</span>,<span class="s">'NO_VERIFICADO'</span>))
+ );
+<span class="k">END</span>;
+<span class="k">GO</span>
+
+/* 8. Contexto de sesion para RLS */
+<span class="k">CREATE</span> OR <span class="k">ALTER</span> <span class="k">PROCEDURE</span> Seguridad.SP_EstablecerContextoSeguridad
+ @IdUsuario <span class="k">INT</span>, @IdSesion UNIQUEIDENTIFIER=<span class="k">NULL</span>, @IdDispositivo BIGINT=<span class="k">NULL</span>,
+ @Aplicacion <span class="k">NVARCHAR</span>(128)=<span class="k">NULL</span>, @DireccionIP <span class="k">VARCHAR</span>(45)=<span class="k">NULL</span>,
+ @CorrelationId UNIQUEIDENTIFIER=<span class="k">NULL</span>
+<span class="k">AS</span>
+<span class="k">BEGIN</span>
+ <span class="k">SET</span> NOCOUNT <span class="k">ON</span>;
+ <span class="k">IF</span> <span class="k">NOT</span> EXISTS(<span class="k">SELECT</span> 1 <span class="k">FROM</span> Seguridad.Usuario <span class="k">WHERE</span> IdUsuario=@IdUsuario AND Estado=<span class="s">'ACTIVO'</span> AND Bloqueado=0)
+   THROW 51001,<span class="s">'Usuario inexistente, inactivo o bloqueado.'</span>,1;
+ EXEC sys.sp_set_session_context @<span class="k">key</span>=N<span class="s">'IdUsuario'</span>,@value=@IdUsuario;
+ EXEC sys.sp_set_session_context @<span class="k">key</span>=N<span class="s">'IdSesion'</span>,@value=@IdSesion;
+ EXEC sys.sp_set_session_context @<span class="k">key</span>=N<span class="s">'IdDispositivo'</span>,@value=@IdDispositivo;
+ EXEC sys.sp_set_session_context @<span class="k">key</span>=N<span class="s">'Aplicacion'</span>,@value=@Aplicacion;
+ EXEC sys.sp_set_session_context @<span class="k">key</span>=N<span class="s">'DireccionIP'</span>,@value=@DireccionIP;
+ EXEC sys.sp_set_session_context @<span class="k">key</span>=N<span class="s">'CorrelationId'</span>,@value=@CorrelationId;
+<span class="k">END</span>;
+<span class="k">GO</span>
+
+<span class="k">CREATE</span> OR <span class="k">ALTER</span> FUNCTION Seguridad.FN_UsuarioContexto()
+RETURNS <span class="k">INT</span>
+<span class="k">AS</span>
+<span class="k">BEGIN</span> RETURN TRY_CONVERT(<span class="k">INT</span>,SESSION_CONTEXT(N<span class="s">'IdUsuario'</span>)); <span class="k">END</span>;
+<span class="k">GO</span>
+
+/* 9. Validacion SoD */
+<span class="k">CREATE</span> OR <span class="k">ALTER</span> <span class="k">PROCEDURE</span> Seguridad.SP_ValidarSegregacionRoles
+ @IdUsuario <span class="k">INT</span>, @IdRolNuevo <span class="k">SMALLINT</span>
+<span class="k">AS</span>
+<span class="k">BEGIN</span>
+ <span class="k">SET</span> NOCOUNT <span class="k">ON</span>;
+ <span class="k">IF</span> EXISTS(
+  <span class="k">SELECT</span> 1 <span class="k">FROM</span> Seguridad.ReglaSegregacion rs
+  JOIN Seguridad.ReglaSegregacionRol rso <span class="k">ON</span> rso.IdReglaSegregacion=rs.IdReglaSegregacion AND rso.TipoRol=<span class="s">'ORIGEN'</span>
+  JOIN Seguridad.ReglaSegregacionRol rsc <span class="k">ON</span> rsc.IdReglaSegregacion=rs.IdReglaSegregacion AND rsc.TipoRol=<span class="s">'CONFLICTO'</span>
+  JOIN Seguridad.UsuarioRol ur <span class="k">ON</span> ur.IdUsuario=@IdUsuario AND ur.IdRol=rso.IdRol AND ur.Activo=1
+  <span class="k">WHERE</span> rs.Activa=1 AND rsc.IdRol=@IdRolNuevo)
+  THROW 51002,<span class="s">'Violacion de segregacion de funciones.'</span>,1;
+<span class="k">END</span>;
+<span class="k">GO</span>
+
+/* 10. Health <span class="k">Check</span> */
+<span class="k">CREATE</span> OR <span class="k">ALTER</span> <span class="k">PROCEDURE</span> Seguridad.SP_HealthCheck
+<span class="k">AS</span>
+<span class="k">BEGIN</span>
+ <span class="k">SET</span> NOCOUNT <span class="k">ON</span>;
+ <span class="k">SELECT</span> DB_NAME() <span class="k">AS</span> BaseDatos,state_desc <span class="k">AS</span> Estado,recovery_model_desc <span class="k">AS</span> RecoveryModel,
+        compatibility_level <span class="k">AS</span> CompatibilityLevel,user_access_desc <span class="k">AS</span> UserAccess,is_read_only <span class="k">AS</span> SoloLectura
+ <span class="k">FROM</span> sys.databases <span class="k">WHERE</span> name=DB_NAME();
+ <span class="k">SELECT</span> name <span class="k">AS</span> Archivo,type_desc <span class="k">AS</span> TipoArchivo,size*8.0/1024 <span class="k">AS</span> TamanioMB,growth,is_percent_growth <span class="k">AS</span> CrecimientoPorcentaje
+ <span class="k">FROM</span> sys.database_files;
+ <span class="k">SELECT</span> COUNT(*) <span class="k">AS</span> Usuarios,
+        SUM(CASE WHEN Estado=<span class="s">'ACTIVO'</span> THEN 1 ELSE 0 <span class="k">END</span>) <span class="k">AS</span> Activos,
+        SUM(CASE WHEN Bloqueado=1 THEN 1 ELSE 0 <span class="k">END</span>) <span class="k">AS</span> Bloqueados
+ <span class="k">FROM</span> Seguridad.Usuario;
+ <span class="k">SELECT</span> COUNT(*) <span class="k">AS</span> SesionesActivas <span class="k">FROM</span> Seguridad.Sesion
+ <span class="k">WHERE</span> Estado=<span class="s">'ACTIVA'</span> AND Revocada=0 AND FechaExpiracion&gt;SYSDATETIME();
+ <span class="k">DECLARE</span> @BD SYSNAME = DB_NAME();
+ DBCC CHECKDB(@BD) <span class="k">WITH</span> NO_INFOMSGS;
+<span class="k">END</span>;
+<span class="k">GO</span>
+
+/* 11. Indices */
+<span class="k">IF</span> <span class="k">NOT</span> EXISTS(<span class="k">SELECT</span> 1 <span class="k">FROM</span> sys.indexes <span class="k">WHERE</span> name=<span class="s">'IX_Dispositivo_Huella'</span>
+  AND object_id=OBJECT_ID(<span class="s">'Seguridad.Dispositivo'</span>))
+ <span class="k">CREATE</span> <span class="k">INDEX</span> IX_Dispositivo_Huella <span class="k">ON</span> Seguridad.Dispositivo(HuellaDispositivo) <span class="k">WHERE</span> HuellaDispositivo IS <span class="k">NOT</span> <span class="k">NULL</span>;
+<span class="k">GO</span>
+<span class="k">IF</span> <span class="k">NOT</span> EXISTS(<span class="k">SELECT</span> 1 <span class="k">FROM</span> sys.indexes <span class="k">WHERE</span> name=<span class="s">'IX_UsuarioDispositivo_Usuario'</span>
+  AND object_id=OBJECT_ID(<span class="s">'Seguridad.UsuarioDispositivo'</span>))
+ <span class="k">CREATE</span> <span class="k">INDEX</span> IX_UsuarioDispositivo_Usuario <span class="k">ON</span> Seguridad.UsuarioDispositivo(IdUsuario,Activo);
+<span class="k">GO</span>
+<span class="k">IF</span> <span class="k">NOT</span> EXISTS(<span class="k">SELECT</span> 1 <span class="k">FROM</span> sys.indexes <span class="k">WHERE</span> name=<span class="s">'IX_IntentoAutenticacion_UsuarioFecha'</span>
+  AND object_id=OBJECT_ID(<span class="s">'Seguridad.IntentoAutenticacion'</span>))
+ <span class="k">CREATE</span> <span class="k">INDEX</span> IX_IntentoAutenticacion_UsuarioFecha <span class="k">ON</span> Seguridad.IntentoAutenticacion(IdUsuario,FechaHora DESC);
+<span class="k">GO</span>
+<span class="k">IF</span> <span class="k">NOT</span> EXISTS(<span class="k">SELECT</span> 1 <span class="k">FROM</span> sys.indexes <span class="k">WHERE</span> name=<span class="s">'IX_IntentoAutenticacion_IPFecha'</span>
+  AND object_id=OBJECT_ID(<span class="s">'Seguridad.IntentoAutenticacion'</span>))
+ <span class="k">CREATE</span> <span class="k">INDEX</span> IX_IntentoAutenticacion_IPFecha <span class="k">ON</span> Seguridad.IntentoAutenticacion(DireccionIP,FechaHora DESC);
+<span class="k">GO</span>
+<span class="k">IF</span> <span class="k">NOT</span> EXISTS(<span class="k">SELECT</span> 1 <span class="k">FROM</span> sys.indexes <span class="k">WHERE</span> name=<span class="s">'IX_AlcanceAcceso_Recurso'</span>
+  AND object_id=OBJECT_ID(<span class="s">'Seguridad.AlcanceAcceso'</span>))
+ <span class="k">CREATE</span> <span class="k">INDEX</span> IX_AlcanceAcceso_Recurso <span class="k">ON</span> Seguridad.AlcanceAcceso(Recurso,Activo);
+<span class="k">GO</span>
+<span class="k">IF</span> <span class="k">NOT</span> EXISTS(<span class="k">SELECT</span> 1 <span class="k">FROM</span> sys.indexes <span class="k">WHERE</span> name=<span class="s">'IX_RolAlcance_Rol'</span>
+  AND object_id=OBJECT_ID(<span class="s">'Seguridad.RolAlcance'</span>))
+ <span class="k">CREATE</span> <span class="k">INDEX</span> IX_RolAlcance_Rol <span class="k">ON</span> Seguridad.RolAlcance(IdRol,Activo);
+<span class="k">GO</span>
+<span class="k">IF</span> <span class="k">NOT</span> EXISTS(<span class="k">SELECT</span> 1 <span class="k">FROM</span> sys.indexes <span class="k">WHERE</span> name=<span class="s">'IX_UsuarioAlcance_Usuario'</span>
+  AND object_id=OBJECT_ID(<span class="s">'Seguridad.UsuarioAlcance'</span>))
+ <span class="k">CREATE</span> <span class="k">INDEX</span> IX_UsuarioAlcance_Usuario <span class="k">ON</span> Seguridad.UsuarioAlcance(IdUsuario,Activo);
+<span class="k">GO</span>
+<span class="k">IF</span> <span class="k">NOT</span> EXISTS(<span class="k">SELECT</span> 1 <span class="k">FROM</span> sys.indexes <span class="k">WHERE</span> name=<span class="s">'IX_ObjetoClasificado_Objeto'</span>
+  AND object_id=OBJECT_ID(<span class="s">'Seguridad.ObjetoClasificado'</span>))
+ <span class="k">CREATE</span> <span class="k">INDEX</span> IX_ObjetoClasificado_Objeto <span class="k">ON</span> Seguridad.ObjetoClasificado(EsquemaObjeto,NombreObjeto);
+<span class="k">GO</span>
+<span class="k">IF</span> <span class="k">NOT</span> EXISTS(<span class="k">SELECT</span> 1 <span class="k">FROM</span> sys.indexes <span class="k">WHERE</span> name=<span class="s">'IX_ObjetoCritico_Criticidad'</span>
+  AND object_id=OBJECT_ID(<span class="s">'Seguridad.ObjetoCritico'</span>))
+ <span class="k">CREATE</span> <span class="k">INDEX</span> IX_ObjetoCritico_Criticidad <span class="k">ON</span> Seguridad.ObjetoCritico(NivelCriticidad,Activo);
+<span class="k">GO</span>
+<span class="k">IF</span> <span class="k">NOT</span> EXISTS(<span class="k">SELECT</span> 1 <span class="k">FROM</span> sys.indexes <span class="k">WHERE</span> name=<span class="s">'IX_MonitoreoIntegridad_Fecha'</span>
+  AND object_id=OBJECT_ID(<span class="s">'Seguridad.MonitoreoIntegridad'</span>))
+ <span class="k">CREATE</span> <span class="k">INDEX</span> IX_MonitoreoIntegridad_Fecha <span class="k">ON</span> Seguridad.MonitoreoIntegridad(FechaHora DESC);
+<span class="k">GO</span>
+
+/* 12. Alcances iniciales */
+<span class="k">INSERT</span> <span class="k">INTO</span> Seguridad.AlcanceAcceso(NombreAlcance,TipoAlcance,Descripcion,Recurso)
+<span class="k">SELECT</span> <span class="s">'PROPIO'</span>,<span class="s">'PROPIO'</span>,<span class="s">'Acceso solamente a informacion perteneciente al usuario.'</span>,<span class="s">'*'</span>
+<span class="k">WHERE</span> <span class="k">NOT</span> EXISTS(<span class="k">SELECT</span> 1 <span class="k">FROM</span> Seguridad.AlcanceAcceso <span class="k">WHERE</span> NombreAlcance=<span class="s">'PROPIO'</span>);
+<span class="k">GO</span>
+<span class="k">INSERT</span> <span class="k">INTO</span> Seguridad.AlcanceAcceso(NombreAlcance,TipoAlcance,Descripcion,Recurso)
+<span class="k">SELECT</span> <span class="s">'ASIGNADO'</span>,<span class="s">'ASIGNADO'</span>,<span class="s">'Acceso unicamente a recursos asignados al usuario.'</span>,<span class="s">'*'</span>
+<span class="k">WHERE</span> <span class="k">NOT</span> EXISTS(<span class="k">SELECT</span> 1 <span class="k">FROM</span> Seguridad.AlcanceAcceso <span class="k">WHERE</span> NombreAlcance=<span class="s">'ASIGNADO'</span>);
+<span class="k">GO</span>
+<span class="k">INSERT</span> <span class="k">INTO</span> Seguridad.AlcanceAcceso(NombreAlcance,TipoAlcance,Descripcion,Recurso)
+<span class="k">SELECT</span> <span class="s">'INSTITUCIONAL'</span>,<span class="s">'INSTITUCIONAL'</span>,<span class="s">'Acceso dentro del ambito institucional autorizado.'</span>,<span class="s">'*'</span>
+<span class="k">WHERE</span> <span class="k">NOT</span> EXISTS(<span class="k">SELECT</span> 1 <span class="k">FROM</span> Seguridad.AlcanceAcceso <span class="k">WHERE</span> NombreAlcance=<span class="s">'INSTITUCIONAL'</span>);
+<span class="k">GO</span>
+
+/* 13. Configuracion DBMS: solo si existe la tabla del modelo base */
+<span class="k">IF</span> OBJECT_ID(<span class="s">'Seguridad.ConfiguracionDBMS'</span>,<span class="s">'U'</span>) IS <span class="k">NOT</span> <span class="k">NULL</span>
+<span class="k">BEGIN</span>
+ <span class="k">IF</span> <span class="k">NOT</span> EXISTS(<span class="k">SELECT</span> 1 <span class="k">FROM</span> Seguridad.ConfiguracionDBMS <span class="k">WHERE</span> Parametro=<span class="s">'SQL_SERVER_AUDIT'</span>)
+   <span class="k">INSERT</span> <span class="k">INTO</span> Seguridad.ConfiguracionDBMS(Parametro,ValorConfigurado,ValorRecomendado,Descripcion,Criticidad)
+   <span class="k">VALUES</span>(<span class="s">'SQL_SERVER_AUDIT'</span>,<span class="s">'PENDIENTE'</span>,<span class="s">'HABILITADO'</span>,<span class="s">'Auditoria nativa del DBMS.'</span>,<span class="s">'ALTA'</span>);
+ <span class="k">IF</span> <span class="k">NOT</span> EXISTS(<span class="k">SELECT</span> 1 <span class="k">FROM</span> Seguridad.ConfiguracionDBMS <span class="k">WHERE</span> Parametro=<span class="s">'ROW_LEVEL_SECURITY'</span>)
+   <span class="k">INSERT</span> <span class="k">INTO</span> Seguridad.ConfiguracionDBMS(Parametro,ValorConfigurado,ValorRecomendado,Descripcion,Criticidad)
+   <span class="k">VALUES</span>(<span class="s">'ROW_LEVEL_SECURITY'</span>,<span class="s">'PREPARADO'</span>,<span class="s">'IMPLEMENTAR_POR_ENTIDAD'</span>,<span class="s">'Predicados RLS segun reglas de negocio.'</span>,<span class="s">'ALTA'</span>);
+ <span class="k">IF</span> <span class="k">NOT</span> EXISTS(<span class="k">SELECT</span> 1 <span class="k">FROM</span> Seguridad.ConfiguracionDBMS <span class="k">WHERE</span> Parametro=<span class="s">'TDE'</span>)
+   <span class="k">INSERT</span> <span class="k">INTO</span> Seguridad.ConfiguracionDBMS(Parametro,ValorConfigurado,ValorRecomendado,Descripcion,Criticidad)
+   <span class="k">VALUES</span>(<span class="s">'TDE'</span>,<span class="s">'PENDIENTE'</span>,<span class="s">'HABILITADO'</span>,<span class="s">'Cifrado de datos en reposo.'</span>,<span class="s">'ALTA'</span>);
+ <span class="k">IF</span> <span class="k">NOT</span> EXISTS(<span class="k">SELECT</span> 1 <span class="k">FROM</span> Seguridad.ConfiguracionDBMS <span class="k">WHERE</span> Parametro=<span class="s">'BACKUP_ENCRYPTION'</span>)
+   <span class="k">INSERT</span> <span class="k">INTO</span> Seguridad.ConfiguracionDBMS(Parametro,ValorConfigurado,ValorRecomendado,Descripcion,Criticidad)
+   <span class="k">VALUES</span>(<span class="s">'BACKUP_ENCRYPTION'</span>,<span class="s">'PENDIENTE'</span>,<span class="s">'HABILITADO'</span>,<span class="s">'Cifrado de copias de seguridad.'</span>,<span class="s">'ALTA'</span>);
+ <span class="k">IF</span> <span class="k">NOT</span> EXISTS(<span class="k">SELECT</span> 1 <span class="k">FROM</span> Seguridad.ConfiguracionDBMS <span class="k">WHERE</span> Parametro=<span class="s">'TLS'</span>)
+   <span class="k">INSERT</span> <span class="k">INTO</span> Seguridad.ConfiguracionDBMS(Parametro,ValorConfigurado,ValorRecomendado,Descripcion,Criticidad)
+   <span class="k">VALUES</span>(<span class="s">'TLS'</span>,<span class="s">'PENDIENTE'</span>,<span class="s">'REQUERIDO'</span>,<span class="s">'Cifrado de comunicaciones cliente-servidor.'</span>,<span class="s">'ALTA'</span>);
+<span class="k">END</span>;
+<span class="k">GO</span>
+
+/* 14. Objetos criticos iniciales */
+<span class="k">INSERT</span> <span class="k">INTO</span> Seguridad.ObjetoCritico(EsquemaObjeto,NombreObjeto,TipoObjeto,NivelCriticidad,RequiereAuditoria,RequiereAprobacion)
+<span class="k">SELECT</span> <span class="s">'Seguridad'</span>,<span class="s">'Usuario'</span>,<span class="s">'TABLE'</span>,<span class="s">'CRITICA'</span>,1,1
+<span class="k">WHERE</span> <span class="k">NOT</span> EXISTS(<span class="k">SELECT</span> 1 <span class="k">FROM</span> Seguridad.ObjetoCritico <span class="k">WHERE</span> EsquemaObjeto=<span class="s">'Seguridad'</span> AND NombreObjeto=<span class="s">'Usuario'</span>);
+<span class="k">GO</span>
+<span class="k">INSERT</span> <span class="k">INTO</span> Seguridad.ObjetoCritico(EsquemaObjeto,NombreObjeto,TipoObjeto,NivelCriticidad,RequiereAuditoria,RequiereAprobacion)
+<span class="k">SELECT</span> <span class="s">'Seguridad'</span>,<span class="s">'Rol'</span>,<span class="s">'TABLE'</span>,<span class="s">'CRITICA'</span>,1,1
+<span class="k">WHERE</span> <span class="k">NOT</span> EXISTS(<span class="k">SELECT</span> 1 <span class="k">FROM</span> Seguridad.ObjetoCritico <span class="k">WHERE</span> EsquemaObjeto=<span class="s">'Seguridad'</span> AND NombreObjeto=<span class="s">'Rol'</span>);
+<span class="k">GO</span>
+<span class="k">INSERT</span> <span class="k">INTO</span> Seguridad.ObjetoCritico(EsquemaObjeto,NombreObjeto,TipoObjeto,NivelCriticidad,RequiereAuditoria,RequiereAprobacion)
+<span class="k">SELECT</span> <span class="s">'Seguridad'</span>,<span class="s">'Permiso'</span>,<span class="s">'TABLE'</span>,<span class="s">'CRITICA'</span>,1,1
+<span class="k">WHERE</span> <span class="k">NOT</span> EXISTS(<span class="k">SELECT</span> 1 <span class="k">FROM</span> Seguridad.ObjetoCritico <span class="k">WHERE</span> EsquemaObjeto=<span class="s">'Seguridad'</span> AND NombreObjeto=<span class="s">'Permiso'</span>);
+<span class="k">GO</span>
+
+/* 15. Panel de seguridad */
+<span class="k">CREATE</span> OR <span class="k">ALTER</span> <span class="k">VIEW</span> Seguridad.V_PanelSeguridad
+<span class="k">AS</span>
+<span class="k">SELECT</span>
+ (<span class="k">SELECT</span> COUNT(*) <span class="k">FROM</span> Seguridad.Usuario <span class="k">WHERE</span> Estado=<span class="s">'ACTIVO'</span> AND Bloqueado=0) <span class="k">AS</span> UsuariosActivos,
+ (<span class="k">SELECT</span> COUNT(*) <span class="k">FROM</span> Seguridad.Usuario <span class="k">WHERE</span> Bloqueado=1 OR Estado=<span class="s">'BLOQUEADO'</span>) <span class="k">AS</span> UsuariosBloqueados,
+ (<span class="k">SELECT</span> COUNT(*) <span class="k">FROM</span> Seguridad.Sesion <span class="k">WHERE</span> Estado=<span class="s">'ACTIVA'</span> AND Revocada=0 AND FechaExpiracion&gt;SYSDATETIME()) <span class="k">AS</span> SesionesActivas,
+ (<span class="k">SELECT</span> COUNT(*) <span class="k">FROM</span> Seguridad.IntentoAutenticacion <span class="k">WHERE</span> FechaHora&gt;=DATEADD(HOUR,-24,SYSDATETIME())
+   AND Resultado IN(<span class="s">'FALLIDO'</span>,<span class="s">'BLOQUEADO'</span>,<span class="s">'MFA_FALLIDO'</span>)) <span class="k">AS</span> FallosAutenticacion24h,
+ (<span class="k">SELECT</span> COUNT(*) <span class="k">FROM</span> Seguridad.AuditoriaSeguridad <span class="k">WHERE</span> FechaHora&gt;=DATEADD(HOUR,-24,SYSDATETIME())
+   AND Resultado IN(<span class="s">'DENEGADO'</span>,<span class="s">'ERROR'</span>)) <span class="k">AS</span> EventosDenegados24h,
+ (<span class="k">SELECT</span> COUNT(*) <span class="k">FROM</span> Seguridad.ObjetoCritico <span class="k">WHERE</span> Activo=1 AND NivelCriticidad=<span class="s">'CRITICA'</span>) <span class="k">AS</span> ObjetosCriticos;
+<span class="k">GO</span>
+
+<span class="k">PRINT</span> <span class="s">'GRADOSTITULOS - SEGURIDAD CORPORATIVA V2 INSTALADA.'</span>;
+<span class="k">GO</span>
+</pre></div></body></html>
