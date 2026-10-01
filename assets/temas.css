@@ -1,0 +1,27 @@
+/* Temas: cada unidad tiene su color y forma; cada semana, su patrón de fondo y matiz. */
+body.u1{--h:40;--r:16px}body.u2{--h:195;--r:3px}body.u3{--h:285;--r:28px}body.u4{--h:150;--r:0}
+body.w1,.week-folder:nth-child(1){--wo:0;--pat:radial-gradient(hsl(var(--h) 80% 70%/.13) 1.3px,transparent 1.8px) 0 0/26px 26px;--wm:"01"}
+body.w2,.week-folder:nth-child(2){--wo:24;--pat:repeating-linear-gradient(135deg,hsl(var(--h) 80% 60%/.08) 0 1px,transparent 1px 22px);--wm:"02"}
+body.w3,.week-folder:nth-child(3){--wo:-24;--pat:repeating-radial-gradient(circle at 88% 0,hsl(var(--h) 80% 60%/.09) 0 1px,transparent 1px 38px);--wm:"03"}
+body.w4,.week-folder:nth-child(4){--wo:48;--pat:linear-gradient(hsl(var(--h) 80% 60%/.07) 1px,transparent 1px) 0 0/100% 30px;--wm:"04"}
+body.home{--wo:0;--pat:radial-gradient(hsl(var(--h) 80% 70%/.10) 1.3px,transparent 1.8px) 0 0/30px 30px,linear-gradient(hsl(var(--h) 80% 60%/.04) 1px,transparent 1px) 0 0/100% 60px}
+body.tema,body.tema .week-folder{--c1:hsl(calc(var(--h) + var(--wo)) 90% 64%);--c2:hsl(calc(var(--h) + var(--wo)) 95% 78%);--ln:hsl(calc(var(--h) + var(--wo)) 80% 60%/.5);--bgc:linear-gradient(150deg,hsl(var(--h) 45% 10%/.97),hsl(var(--h) 55% 4%/.98))}
+body.tema .unit-page{position:relative;background:radial-gradient(circle at 82% 6%,hsl(var(--h) 90% 55%/.20),transparent 32%),radial-gradient(circle at 5% 100%,hsl(calc(var(--h) + 60) 90% 55%/.10),transparent 35%),var(--pat),hsl(var(--h) 60% 4%)!important}
+body.tema .unit-page-inner{position:relative}
+body.tema .unit-page-inner::before{content:var(--wm,"");position:absolute;right:0;top:-34px;font:700 clamp(110px,22vw,230px)/1 "Cormorant Garamond",serif;color:hsl(var(--h) 90% 70%/.07);pointer-events:none;z-index:0}
+body.tema :is(.week-folder,.content-card,.s4-card,.doc-card,.doc-head,.s4-hero,.reg-card,.sgbd-card,.infografia-card,.quest,.hub-week,.unit-banner-arcane){border:1px solid var(--ln)!important;border-radius:var(--r)!important;background:var(--pat),var(--bgc)!important;box-shadow:0 14px 44px rgba(0,0,0,.4)!important;position:relative}
+body.u1 :is(.week-folder,.content-card,.s4-card,.doc-card,.doc-head,.s4-hero,.quest,.unit-banner-arcane){border-left:6px solid var(--c1)!important}
+body.u2 :is(.week-folder,.content-card,.s4-card,.doc-card,.doc-head,.s4-hero,.quest,.unit-banner-arcane){box-shadow:inset 0 4px 0 var(--c1),0 14px 44px rgba(0,0,0,.4)!important}
+body.u3 :is(.week-folder,.content-card,.s4-card,.doc-card,.doc-head,.s4-hero,.quest,.unit-banner-arcane){box-shadow:0 0 38px hsl(var(--h) 90% 60%/.25),inset 0 0 30px hsl(var(--h) 90% 60%/.06)!important}
+body.u4 :is(.week-folder,.content-card,.s4-card,.doc-card,.doc-head,.s4-hero,.quest,.unit-banner-arcane){clip-path:polygon(0 16px,16px 0,calc(100% - 16px) 0,100% 16px,100% calc(100% - 16px),calc(100% - 16px) 100%,16px 100%,0 calc(100% - 16px));box-shadow:none!important}
+body.tema :is(h1,h2,h3,.quest-title,.week-folder b,.s4-card h2,.doc-card h3,.s4-hero h1,.doc-head h2,.unit-banner-arcane h1){color:var(--c2)!important;letter-spacing:.01em}
+body.tema :is(.quest-week,.unit-card-number,.unit-kicker,.doc-kicker,.activity-kicker){display:inline-block;padding:4px 14px;border-radius:999px;border:1px solid var(--ln);background:hsl(calc(var(--h) + var(--wo)) 90% 60%/.12);color:var(--c2)!important;font-weight:700;letter-spacing:.14em}
+body.tema :is(.back-link,.s4-btn,.doc-btn,.activity-btn,.btn){color:var(--c1)!important;border:1px solid var(--ln)!important;background:hsl(calc(var(--h) + var(--wo)) 90% 60%/.08)!important;border-radius:calc(var(--r)/2 + 3px)!important}
+body.tema :is(.s4-btn.gold,.doc-btn.gold){color:var(--c2)!important}
+body.tema :is(.s4-btn,.doc-btn,.back-link,.activity-btn):hover{background:hsl(calc(var(--h) + var(--wo)) 90% 60%/.25)!important;color:#fff!important}
+body.tema :is(.s4-num,.doc-num,.unit-sigil,.week-arrow){border:2px solid var(--c1)!important;color:var(--c1)!important}
+body.tema :is(.s4-chips span,.doc-chips span,.s4-stats span,.doc-stats span){border-color:var(--ln)!important;color:var(--c2)!important;background:hsl(calc(var(--h) + var(--wo)) 90% 60%/.08)!important}
+body.tema .week-folder:hover{transform:translateY(-5px);border-color:var(--c1)!important}
+body.tema .rune-bar i{background:linear-gradient(90deg,var(--c1),var(--c2))!important}
+body.tema .unit-banner-arcane{background:linear-gradient(120deg,hsl(var(--h) 70% 16%/.97),hsl(calc(var(--h) + 50) 70% 6%/.98))!important}
+body.tema .week-folder-grid{gap:24px!important}
