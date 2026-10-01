@@ -1,0 +1,1733 @@
+<!DOCTYPE html>
+
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>Ramos Zamora Michael Deivys · Portafolio Base de Datos II</title>
+<meta content="Portafolio académico de Ramos Zamora Michael Deivys — Base de Datos II, UPLA, 2026-II." name="description"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&amp;family=Montserrat:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#05090e;--panel:#09131b;--panel2:#0d1b25;--line:rgba(212,154,42,.38);--gold:#d49a2a;--gold2:#ffe18a;--cyan:#55c9ff;--text:#e9edf0;--muted:#9fb2c0;--shadow:0 22px 70px rgba(0,0,0,.48)}
+*{box-sizing:border-box;scroll-behavior:smooth}
+body{margin:0;background:radial-gradient(circle at 75% 0%,rgba(24,139,208,.10),transparent 30%),linear-gradient(135deg,#03070b,#08131b 45%,#03070b);color:var(--text);font-family:Montserrat,sans-serif}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;background-image:linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.014) 1px,transparent 1px);background-size:44px 44px;mask-image:linear-gradient(to bottom,black,transparent 85%);z-index:-1}
+.layout{display:grid;grid-template-columns:270px 1fr;min-height:100vh}
+.sidebar{position:sticky;top:0;height:100vh;padding:28px 20px;border-right:1px solid var(--line);background:linear-gradient(180deg,rgba(4,10,15,.98),rgba(7,18,25,.96));box-shadow:12px 0 40px rgba(0,0,0,.28);display:flex;flex-direction:column;z-index:10}
+.brand{text-align:center;padding-bottom:22px;border-bottom:1px solid rgba(212,154,42,.35)}
+.logo{width:82px;height:82px;border:1px solid var(--gold);border-radius:50%;margin:auto;display:grid;place-items:center;font:700 35px 'Cormorant Garamond';color:var(--gold2);box-shadow:0 0 35px rgba(212,154,42,.14),inset 0 0 25px rgba(212,154,42,.06)}
+.brand h1{font:700 16px Cormorant Garamond;margin:14px 0 5px;color:var(--gold2);letter-spacing:.06em} .brand p{margin:0;color:#c6d0d7;font-size:13px}
+.nav{display:grid;gap:8px;margin:24px 0} .nav a{color:#dfe5e9;text-decoration:none;padding:12px 13px;border:1px solid transparent;border-radius:8px;display:flex;gap:10px;align-items:center;transition:.2s} .nav a:hover{border-color:var(--line);background:rgba(212,154,42,.08);color:var(--gold2);transform:translateX(2px)}
+.quote{margin-top:auto;padding:18px 12px;color:#c8bfa9;text-align:center;font-style:italic;line-height:1.55;border-top:1px solid rgba(212,154,42,.3)}
+.social{display:flex;justify-content:center;gap:18px;padding:16px 0;color:var(--gold2)}
+main{min-width:0}
+.hero{min-height:590px;padding:90px 7vw 65px;position:relative;overflow:hidden;display:flex;align-items:flex-end;border-bottom:1px solid var(--line);background:linear-gradient(90deg,rgba(3,8,12,.96) 0%,rgba(3,8,12,.76) 45%,rgba(3,8,12,.18) 100%),radial-gradient(circle at 85% 45%,rgba(85,201,255,.12),transparent 25%),linear-gradient(135deg,#07111a,#0a1720)}
+.hero:after{content:"✦";position:absolute;right:7%;top:15%;font-size:160px;color:rgba(212,154,42,.07);font-family:Cormorant Garamond}
+.hero-content{max-width:900px;position:relative;z-index:1} .eyebrow{font:600 14px Cormorant Garamond;letter-spacing:.17em;color:var(--gold2)} .hero h2{font:700 clamp(2.8rem,6vw,5.8rem) 'Cormorant Garamond';line-height:.98;margin:15px 0;color:#f5d98e;text-shadow:0 8px 35px rgba(0,0,0,.65)} .hero .role{font-size:1.15rem;color:#e8eef2} .hero .intro{max-width:700px;font-size:1.1rem;color:#bac7cf;line-height:1.7;margin:22px 0 30px} .actions{display:flex;gap:12px;flex-wrap:wrap} .btn{display:inline-flex;align-items:center;gap:8px;text-decoration:none;padding:12px 20px;border-radius:7px;border:1px solid var(--gold);color:var(--gold2);background:rgba(212,154,42,.05);font-weight:600} .btn.primary{background:linear-gradient(135deg,#e9b94b,#a66c08);color:#171108;box-shadow:0 8px 30px rgba(212,154,42,.18)}
+.container{width:min(1250px,92%);margin:auto} section{padding:58px 0} .section-head{display:flex;align-items:end;gap:14px;border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:22px} .section-head .mark{color:var(--gold2);font-size:27px} .section-head h2{font:700 25px Cormorant Garamond;margin:0;color:var(--gold2);letter-spacing:.05em} .section-head p{margin:0 0 1px auto;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:1.25fr .95fr;gap:18px} .card{background:linear-gradient(145deg,rgba(13,27,37,.94),rgba(6,14,20,.96));border:1px solid rgba(212,154,42,.34);border-radius:12px;padding:24px;box-shadow:var(--shadow);position:relative;overflow:hidden} .card:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 100% 0%,rgba(85,201,255,.08),transparent 30%);pointer-events:none} .card h3{font:600 19px Cormorant Garamond;color:var(--gold2);margin:0 0 10px} .card p{color:#bdc9d0;line-height:1.65}
+.profile{display:grid;grid-template-columns:180px 1fr;gap:24px;align-items:center} .profile img{width:180px;height:220px;object-fit:cover;border:2px solid var(--gold);border-radius:12px;padding:4px;background:#061019} .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px} .chip{padding:7px 10px;border-radius:999px;border:1px solid rgba(85,201,255,.35);background:rgba(85,201,255,.06);color:#bdeaff;font-size:12px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px} .stat{padding:13px;border:1px solid rgba(255,255,255,.08);border-radius:8px;background:rgba(0,0,0,.14)} .stat b{display:block;color:var(--gold);font:600 11px Cormorant Garamond;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px} .stat span{color:#e6edf1;font-size:14px}
+.projects{display:grid;grid-template-columns:repeat(3,1fr);gap:16px} .project{min-height:190px;display:flex;flex-direction:column} .project .tag{color:var(--cyan);font:600 11px Cormorant Garamond;letter-spacing:.1em;text-transform:uppercase} .project details{margin-top:auto} summary{cursor:pointer;color:var(--gold2);padding-top:15px;font-weight:600} details[open] summary{margin-bottom:14px} .project-body{color:#b9c6ce;font-size:14px;line-height:1.6;max-height:650px;overflow:auto;padding-right:5px}
+/* Original academic content inside project drawers */
+.project-body img{max-width:100%;height:auto;border-radius:9px;border:1px solid rgba(212,154,42,.3)} .project-body h2,.project-body h3,.project-body h4{font-family:Cormorant Garamond;color:var(--gold2)} .project-body p,.project-body li{color:#c0ccd3;line-height:1.6} .project-body .question-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px} .project-body .question-card,.project-body .codex-card,.project-body .final-hero{padding:12px;border:1px solid rgba(212,154,42,.24);border-radius:8px;margin:8px 0;background:rgba(0,0,0,.14)}
+.skills{display:grid;grid-template-columns:1fr 1fr;gap:12px} .skill{display:grid;grid-template-columns:1fr auto;gap:8px;padding:12px;border:1px solid rgba(255,255,255,.08);border-radius:8px} .bar{grid-column:1/-1;height:7px;border-radius:20px;background:#112632;overflow:hidden} .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--cyan),var(--gold));border-radius:inherit}
+.units-wrap{background:linear-gradient(180deg,rgba(3,8,12,.4),rgba(9,20,27,.65));border-top:1px solid rgba(85,201,255,.12)} .unit-tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px} .unit-tab{padding:15px;border:1px solid rgba(212,154,42,.3);border-radius:9px;background:#08131d;color:#cbd5db;text-align:left;font:600 13px Cormorant Garamond;cursor:pointer} .unit-tab.active,.unit-tab:hover{background:linear-gradient(135deg,rgba(212,154,42,.18),rgba(85,201,255,.06));border-color:var(--gold);color:var(--gold2)} .unit-panel{display:none} .unit-panel.active{display:block} .unit-summary{display:flex;align-items:center;gap:15px;margin:10px 0;padding:18px;border:1px solid rgba(212,154,42,.25);border-radius:10px;background:#08141d} .unit-number{font:700 24px Cormorant Garamond;color:var(--gold2);min-width:35px} .unit-summary h3{font:600 17px Cormorant Garamond;margin:0 0 4px;color:#f1d68d} .unit-summary p{margin:0;color:#aebdc6;line-height:1.5} .unit-badge{margin-left:auto;color:#8fdcff;border:1px solid rgba(85,201,255,.28);padding:6px 9px;border-radius:999px;font-size:11px;white-space:nowrap}
+.quest-list{display:grid;gap:14px} .quest{background:linear-gradient(145deg,#0b1b26,#061019);border:1px solid rgba(212,154,42,.35);border-left:3px solid var(--gold);border-radius:10px;padding:19px} .quest-top{display:flex;justify-content:space-between;gap:20px;align-items:start} .quest-week{font:600 11px Cormorant Garamond;letter-spacing:.12em;color:var(--cyan)} .quest-title{font:600 18px Cormorant Garamond;color:var(--gold2);margin-top:4px} .quest-desc{color:#bcc9d0;line-height:1.6} .quest-progress{min-width:150px;text-align:right} .quest-progress .pct{color:var(--gold2);font-weight:700} .rune-bar{height:6px;background:#112733;border-radius:20px;overflow:hidden;margin:6px 0} .rune-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),var(--cyan))} .quest-progress small{color:#8296a3}
+footer{padding:30px 0 50px;border-top:1px solid var(--line);text-align:center;color:#8798a3} footer strong{color:var(--gold2);font-family:Cormorant Garamond}
+@media(max-width:1000px){.layout{grid-template-columns:1fr}.sidebar{position:relative;height:auto}.nav{grid-template-columns:repeat(4,1fr)}.quote,.social{display:none}.projects{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}}
+@media(max-width:700px){.nav{grid-template-columns:1fr 1fr}.hero{min-height:520px;padding:70px 5vw 50px}.profile{grid-template-columns:1fr}.profile img{width:150px;height:185px}.projects,.skills,.unit-tabs{grid-template-columns:1fr}.stats{grid-template-columns:1fr}.quest-top{flex-direction:column}.quest-progress{text-align:left;width:100%}.unit-summary{align-items:flex-start;flex-wrap:wrap}.unit-badge{margin-left:0}.project-body .question-grid{grid-template-columns:1fr}}
+
+/* ===== LOGIN — ESTILO CÓSMICO DE REFERENCIA ===== */
+#login-screen{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#02050a url("assets/agujero-negro-login.svg") center center/cover no-repeat;animation:loginFade .7s ease both}
+#login-screen:before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.08),rgba(0,0,0,.02) 48%,rgba(0,0,0,.08));pointer-events:none}
+#login-screen:after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 52%,transparent 0 25%,rgba(0,0,0,.18) 58%,rgba(0,0,0,.45) 100%);pointer-events:none}
+.login-stars,.login-orbit,.magic-particles{display:none}
+.gate-frame{width:min(430px,30vw);min-width:360px;padding:35px 38px 27px;text-align:center;position:relative;z-index:2;background:linear-gradient(145deg,rgba(3,10,16,.94),rgba(4,10,15,.90));border:1px solid rgba(216,168,59,.72);box-shadow:0 0 0 1px rgba(255,225,138,.08),0 25px 80px rgba(0,0,0,.72),inset 0 0 35px rgba(216,168,59,.035);clip-path:polygon(0 18px,18px 0,calc(100% - 18px) 0,100% 18px,100% calc(100% - 18px),calc(100% - 18px) 100%,18px 100%,0 calc(100% - 18px));animation:gateRise .9s cubic-bezier(.2,.8,.2,1) both}
+.gate-frame:before{content:"";position:absolute;inset:10px;border:1px solid rgba(216,168,59,.20);pointer-events:none;clip-path:inherit}
+.gate-frame:after{content:"";position:absolute;left:28px;right:28px;top:14px;height:1px;background:linear-gradient(90deg,transparent,rgba(255,225,138,.7),transparent);opacity:.8}
+.login-emblem{width:78px;height:78px;margin:0 auto 16px;border:1px solid var(--gold2);border-radius:50%;display:grid;place-items:center;color:var(--gold2);font:700 29px 'Cormorant Garamond';box-shadow:0 0 28px rgba(216,168,59,.18),inset 0 0 22px rgba(216,168,59,.08);position:relative}
+.login-emblem:before,.login-emblem:after{content:"✦";position:absolute;color:var(--gold2);font-size:10px;top:1px}.login-emblem:before{left:10px}.login-emblem:after{right:10px}
+.login-kicker{display:none}.gate-title{font:600 clamp(1.45rem,2.4vw,1.85rem) 'Cormorant Garamond';letter-spacing:.18em;color:#ffe18a;margin:0 0 8px;text-shadow:0 0 20px rgba(255,216,117,.12);text-transform:uppercase}.gate-sub{font:500 12px Cormorant Garamond;letter-spacing:.18em;color:#aebbc5;margin:0 auto 14px;text-transform:uppercase}.login-rune{color:#d8a83b;font-size:17px;margin:7px 0 15px}
+#login-form{text-align:left;max-width:360px;margin:auto}.field{margin:12px 0}.field label{display:none}.input-wrap{height:49px;display:flex;align-items:center;gap:10px;border:1px solid rgba(216,168,59,.48);background:rgba(1,7,12,.70);padding:0 13px;transition:.25s;box-shadow:inset 0 0 18px rgba(0,0,0,.18)}.input-wrap:focus-within{border-color:#ffe18a;box-shadow:0 0 20px rgba(216,168,59,.10),inset 0 0 15px rgba(216,168,59,.04)}.input-wrap span{color:#ffe18a;font-size:15px;width:18px;text-align:center}.input-wrap input{width:100%;border:0;outline:0;background:transparent;color:#eef5f8;padding:12px 2px;font:500 14px Montserrat}.input-wrap input::placeholder{color:#82919b}
+.btn-enter{position:relative;overflow:hidden;width:100%;margin-top:13px;padding:14px 18px;border:1px solid #ffe18a;background:linear-gradient(135deg,#dca53a,#9c6507);color:#171006;font:700 13px Cormorant Garamond;letter-spacing:.10em;cursor:pointer;box-shadow:0 10px 30px rgba(216,168,59,.16);transition:.25s;text-transform:uppercase}.btn-enter:before{content:"";position:absolute;inset:2px;border:1px solid rgba(255,255,255,.18);pointer-events:none}.btn-enter:hover{transform:translateY(-2px);box-shadow:0 14px 35px rgba(216,168,59,.24)}.btn-enter.is-loading{pointer-events:none;filter:saturate(.7)}.spinner{display:none;width:15px;height:15px;border:2px solid rgba(23,16,6,.25);border-top-color:#171006;border-radius:50%;vertical-align:middle;margin-right:8px;animation:spinRune .7s linear infinite}.is-loading .spinner{display:inline-block}.login-error{display:none;margin:13px 0 0;padding:9px;border:1px solid rgba(205,75,75,.35);color:#ff9b9b;background:rgba(120,25,25,.12);font-size:12px;text-align:center}.login-error.show{display:block;animation:shake .35s ease}.hint{font-size:10px;color:#70808a;margin:15px 0 0}.hint b{color:#c7a866}
+@keyframes loginFade{from{opacity:0}to{opacity:1}}@keyframes gateRise{from{opacity:0;transform:translateY(28px) scale(.97)}to{opacity:1;transform:none}}@keyframes spinRune{to{transform:rotate(360deg)}}@keyframes shake{25%{transform:translateX(-6px)}50%{transform:translateX(6px)}75%{transform:translateX(-3px)}}
+@media(max-width:1100px){.gate-frame{width:min(430px,40vw)}}
+@media(max-width:700px){#login-screen{background-position:center center}.gate-frame{width:min(92vw,430px);min-width:0;padding:32px 25px 25px}.login-emblem{width:72px;height:72px}.gate-title{letter-spacing:.12em}.gate-sub{letter-spacing:.10em}}
+
+/* ===== UNIDADES DENTRO DE PROYECTOS ===== */
+.unit-projects-block{margin-top:38px;padding-top:34px;border-top:1px solid rgba(212,154,42,.28)}.unit-projects-block .section-head{margin-top:0}.unit-tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:20px 0}.unit-tab{position:relative;cursor:pointer;padding:16px 12px;border:1px solid rgba(212,154,42,.28);border-radius:10px;background:linear-gradient(145deg,#0b1822,#061018);color:#dce5e9;font:600 13px Cormorant Garamond;transition:.25s;overflow:hidden}.unit-tab:after{content:"✦";position:absolute;right:10px;top:8px;color:rgba(212,154,42,.35);font-size:12px}.unit-tab:hover{transform:translateY(-2px);border-color:var(--gold);box-shadow:0 12px 30px rgba(0,0,0,.25)}.unit-tab.active{border-color:var(--gold2);color:var(--gold2);background:linear-gradient(145deg,rgba(212,154,42,.14),rgba(6,16,24,.98));box-shadow:0 0 25px rgba(212,154,42,.08)}.unit-panel{display:none;animation:panelIn .45s ease both}.unit-panel.active{display:block}.unit-live-note{display:inline-block;margin:0 0 14px;padding:7px 12px;border:1px solid rgba(85,201,255,.28);border-radius:999px;color:#8edbff;font:600 11px Cormorant Garamond;letter-spacing:.08em;background:rgba(85,201,255,.05)}.unit-banner{display:grid;grid-template-columns:64px 1fr;gap:16px;align-items:start;padding:20px;margin-bottom:18px;border:1px solid rgba(212,154,42,.25);border-radius:12px;background:linear-gradient(145deg,rgba(13,27,37,.95),rgba(5,12,18,.98))}.unit-roman{display:grid;place-items:center;width:56px;height:56px;border:1px solid var(--gold);border-radius:50%;color:var(--gold2);font:700 22px Cormorant Garamond}.unit-kicker,.week-number{font:600 10px Cormorant Garamond;letter-spacing:.14em;color:var(--cyan)}.unit-banner h3{font:600 21px Cormorant Garamond;color:var(--gold2);margin:5px 0}.unit-banner p{margin:0;color:#aebdc7;line-height:1.6}.week-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}.week-card{position:relative;padding:20px;border:1px solid rgba(212,154,42,.25);border-radius:11px;background:linear-gradient(145deg,rgba(11,25,34,.96),rgba(4,11,16,.98));transition:.25s}.week-card:hover{transform:translateY(-3px);border-color:rgba(212,154,42,.6);box-shadow:0 15px 40px rgba(0,0,0,.3)}.week-card h4{font:600 17px Cormorant Garamond;color:var(--gold2);margin:7px 0}.week-card p{color:#aebdc7;line-height:1.55;font-size:14px}.week-status{display:inline-block;margin:7px 0;padding:5px 8px;border-radius:5px;color:#8edbff;background:rgba(85,201,255,.05);border:1px solid rgba(85,201,255,.18);font-size:11px}.week-lock{color:#8f7b4b;font-size:11px;margin-top:12px}
+@keyframes loginFade{from{opacity:0}to{opacity:1}}@keyframes gateRise{from{opacity:0;transform:translateY(28px) scale(.97)}to{opacity:1;transform:none}}@keyframes spinRune{to{transform:rotate(360deg)}}@keyframes floatRune{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}@keyframes emblemPulse{0%,100%{box-shadow:0 0 35px rgba(212,154,42,.16),inset 0 0 30px rgba(212,154,42,.08)}50%{box-shadow:0 0 55px rgba(212,154,42,.28),inset 0 0 38px rgba(212,154,42,.12)}}@keyframes starsMove{to{background-position:0 73px}}@keyframes particle{0%{transform:translateY(20px) scale(.6);opacity:0}20%{opacity:.7}100%{transform:translateY(-130px) scale(1.2);opacity:0}}@keyframes shake{25%{transform:translateX(-6px)}50%{transform:translateX(6px)}75%{transform:translateX(-3px)}}@keyframes panelIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media(max-width:900px){.unit-tabs{grid-template-columns:repeat(2,1fr)}.week-grid{grid-template-columns:1fr}.gate-frame{padding:34px 26px 28px}}@media(max-width:600px){.unit-tabs{grid-template-columns:1fr}.login-orbit{display:none}}
+<style>#login-screen.unlocking{animation:unlock .75s ease forwards;pointer-events:none}@keyframes unlock{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.04);filter:blur(5px)}}<style>.logout-nav{width:100%;margin-top:8px;padding:10px 12px;border:1px solid rgba(212,154,42,.22);border-radius:8px;background:rgba(212,154,42,.04);color:#9fb2c0;text-align:left;font:500 13px Montserrat;cursor:pointer;transition:.2s}.logout-nav:hover{color:var(--gold2);border-color:var(--gold);background:rgba(212,154,42,.08)}@media(max-width:900px){.logout-nav{text-align:center}}
+/* ===== PROJECTS / UNITS V3 ===== */
+.project-intro{display:flex;justify-content:space-between;align-items:center;gap:24px;margin:0 0 22px;padding:22px 24px;border:1px solid rgba(212,154,42,.32);border-radius:14px;background:linear-gradient(135deg,rgba(8,19,30,.98),rgba(12,25,37,.88));box-shadow:0 0 30px rgba(0,0,0,.25)}
+.arcane-label{font:700 11px Cormorant Garamond;letter-spacing:.16em;color:var(--cyan)} .project-intro h3{font:600 22px Cormorant Garamond;color:var(--gold2);margin:6px 0}.project-intro p{margin:0;color:#aebdc6;line-height:1.6;max-width:850px}.project-rune{width:72px;height:72px;display:grid;place-items:center;border:1px solid var(--gold);border-radius:50%;font-size:38px;color:var(--gold2);box-shadow:0 0 25px rgba(212,154,42,.18);animation:runePulse 3s ease-in-out infinite}.project-unit-tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:20px 0}.project-unit-tabs .unit-tab{display:flex;align-items:center;gap:12px;text-align:left;min-height:78px}.project-unit-tabs .unit-tab span:last-child{display:flex;flex-direction:column}.project-unit-tabs .unit-tab small{color:#8da1ad;margin-top:4px}.project-unit-tabs .unit-tab.is-active small{color:#bfeeff}.project-unit-tabs .u-num{font:700 27px Cormorant Garamond;color:var(--gold2);min-width:34px}.project-units>.unit-panel{display:none}.project-units>.unit-panel.is-active{display:block}.project-units>.unit-panel:first-child{display:block}
+/* Fix oversized / broken-looking evidence images */
+#proyectos .quest-media{margin:18px 0 8px;display:flex;flex-direction:column;align-items:center;padding:14px;border:1px solid rgba(85,201,255,.2);border-radius:12px;background:#06111a;overflow:hidden}#proyectos .quest-media img{display:block;width:min(100%,760px);height:420px;object-fit:contain;object-position:center;border-radius:8px;cursor:zoom-in;background:#07131d;box-shadow:0 10px 35px rgba(0,0,0,.35)}#proyectos .quest-media-caption{display:flex;align-items:center;gap:8px;width:100%;max-width:760px;padding:10px 4px 2px;color:#91a5b1;font-size:12px}.reg-grid{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}.reg-card{min-width:0!important}.reg-card-media{height:360px!important;display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:10px}.reg-card-media img{width:100%!important;height:100%!important;object-fit:contain!important;display:block!important}.sgbd-grid{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}.sgbd-card{min-width:0!important}.sgbd-card-media{height:260px!important;display:flex;align-items:center;justify-content:center;overflow:hidden}.sgbd-card-media img{width:100%!important;height:100%!important;object-fit:contain!important}.question-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.question-card{min-width:0}.unit-banner-arcane{display:flex;gap:18px;align-items:center;padding:20px;margin-bottom:16px;border:1px solid rgba(212,154,42,.28);border-radius:14px;background:linear-gradient(135deg,#08151f,#0a1b28)}.unit-sigil{width:64px;height:64px;display:grid;place-items:center;flex:none;border:1px solid var(--gold);border-radius:50%;font:700 25px Cormorant Garamond;color:var(--gold2);box-shadow:inset 0 0 20px rgba(212,154,42,.08)}.unit-banner-arcane h3{margin:4px 0;color:var(--gold2);font:600 22px Cormorant Garamond}.unit-banner-arcane p{margin:0;color:#aebdc6;line-height:1.55}.unit-kicker{font:700 10px Cormorant Garamond;letter-spacing:.16em;color:var(--cyan)}.week-grid-arcane{display:grid;gap:13px}.week-card-arcane{display:flex;gap:16px;padding:19px;border:1px solid rgba(212,154,42,.25);border-left:3px solid var(--gold);border-radius:12px;background:linear-gradient(145deg,#0b1b26,#061019);transition:transform .2s ease,border-color .2s ease}.week-card-arcane:hover{transform:translateY(-2px);border-color:rgba(85,201,255,.5)}.week-orb{width:48px;height:48px;display:grid;place-items:center;flex:none;border-radius:50%;border:1px solid rgba(85,201,255,.4);color:var(--cyan);font:700 13px Cormorant Garamond}.week-card-arcane h3{margin:4px 0 8px;color:var(--gold2);font:600 18px Cormorant Garamond}.week-card-arcane p{margin:0;color:#aebdc6;line-height:1.55}.pending-badge{display:inline-block;margin-top:10px;padding:5px 9px;border:1px solid rgba(85,201,255,.25);border-radius:999px;color:#8fdcff;font-size:11px}.project-units .unit-panel#unit-1{display:block}.project-units .unit-panel#unit-1:not(.is-active){display:none}
+@keyframes runePulse{0%,100%{transform:rotate(0) scale(1);opacity:.85}50%{transform:rotate(8deg) scale(1.06);opacity:1}}
+@media(max-width:900px){.project-unit-tabs{grid-template-columns:repeat(2,1fr)}.reg-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.sgbd-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.question-grid{grid-template-columns:1fr}.project-intro{align-items:flex-start}.project-rune{display:none}}
+@media(max-width:560px){.project-unit-tabs{grid-template-columns:1fr}.reg-grid,.sgbd-grid{grid-template-columns:1fr}.project-unit-tabs .unit-tab{min-height:65px}.unit-banner-arcane{align-items:flex-start}.week-card-arcane{padding:15px}.week-orb{width:40px;height:40px}}
+
+/* COSMIC OVERHAUL */
+:root{--space:#030914;--nebula:#071a31;--cosmic:#45cfff;--starlight:#e9f7ff;--gold:#d8a83b;--gold2:#ffe18a}
+html{scroll-behavior:smooth}
+body{background:#020711;color:#dbe9f2}
+body:before{content:"";position:fixed;inset:0;z-index:-3;pointer-events:none;background-image:linear-gradient(rgba(2,7,17,.82),rgba(2,7,17,.9)),url("assets/backgrounds/cosmic-background-1.png");background-size:cover;background-position:center;background-attachment:fixed;opacity:.95}
+body:after{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;background:radial-gradient(circle at 18% 20%,rgba(30,126,206,.15),transparent 24%),radial-gradient(circle at 86% 34%,rgba(111,52,196,.13),transparent 25%),radial-gradient(circle at 55% 88%,rgba(255,179,58,.08),transparent 22%);mix-blend-mode:screen}
+.hero{background:linear-gradient(90deg,rgba(2,7,13,.97) 0%,rgba(2,8,17,.8) 42%,rgba(2,8,17,.22) 100%),url("assets/backgrounds/cosmic-background-1.png");background-size:cover;background-position:center;box-shadow:inset 0 -100px 100px rgba(2,7,17,.55)}
+.hero:after{content:"✦   ✧   ·   ✦   ·   ✧   ✦";position:absolute;inset:auto 0 28px;text-align:center;color:rgba(112,211,255,.5);letter-spacing:28px;font-size:11px;pointer-events:none}
+.card,.quest,.project-intro,.unit-banner-arcane,.week-card-arcane{background:linear-gradient(145deg,rgba(7,20,34,.9),rgba(2,8,17,.9));backdrop-filter:blur(8px);box-shadow:0 16px 50px rgba(0,0,0,.22)}
+.section-head h2,.unit-banner-arcane h3,.week-card-arcane h3{ text-shadow:0 0 18px rgba(85,201,255,.12)}
+#proyectos .quest-media{padding:8px;background:rgba(2,9,17,.72);border-color:rgba(69,207,255,.22)}
+#proyectos .quest-media img{width:min(100%,900px);height:auto;max-height:none;object-fit:contain;background:transparent;box-shadow:0 14px 45px rgba(0,0,0,.45)}
+.reg-card-media{height:auto!important;min-height:0!important;padding:6px}.reg-card-media img{height:auto!important;max-height:420px;object-fit:contain!important}
+.sgbd-card-media{height:auto!important;min-height:0!important;padding:6px}.sgbd-card-media img{height:auto!important;max-height:320px;object-fit:contain!important}
+.final-questions{margin-top:18px}
+.final-hero{background:radial-gradient(circle at 50% 0%,rgba(69,207,255,.09),transparent 45%),linear-gradient(145deg,rgba(8,23,40,.92),rgba(2,8,17,.92))}
+/* Stars / orbital accents */
+.cosmic-orbit{position:absolute;inset:12% 8%;border:1px solid rgba(69,207,255,.08);border-radius:50%;transform:rotate(-12deg);pointer-events:none}.cosmic-orbit:before{content:"";position:absolute;width:8px;height:8px;right:16%;top:3%;border-radius:50%;background:var(--cosmic);box-shadow:0 0 18px var(--cosmic)}
+/* Xal'tor assistant */
+.cosmic-bot{position:fixed;right:24px;bottom:24px;z-index:9000;font-family:Montserrat,sans-serif}
+.bot-toggle{width:62px;height:62px;border-radius:50%;border:1px solid rgba(255,225,138,.75);background:radial-gradient(circle at 35% 30%,#193e5b,#050c15 65%);color:#ffe18a;font-size:25px;cursor:pointer;box-shadow:0 0 0 5px rgba(69,207,255,.05),0 0 35px rgba(69,207,255,.22);animation:botPulse 3s ease-in-out infinite}
+.bot-panel{position:absolute;right:0;bottom:76px;width:min(370px,calc(100vw - 32px));height:500px;display:none;flex-direction:column;overflow:hidden;border:1px solid rgba(69,207,255,.32);border-radius:18px;background:linear-gradient(160deg,rgba(4,14,25,.98),rgba(2,7,14,.98));box-shadow:0 25px 90px rgba(0,0,0,.65),0 0 45px rgba(69,207,255,.09);backdrop-filter:blur(16px)}
+.bot-panel.open{display:flex;animation:botIn .25s ease both}.bot-head{display:flex;align-items:center;gap:12px;padding:15px;border-bottom:1px solid rgba(255,225,138,.18);background:linear-gradient(90deg,rgba(69,207,255,.08),rgba(216,168,59,.05))}.bot-avatar{width:40px;height:40px;display:grid;place-items:center;border-radius:50%;border:1px solid #ffe18a;color:#ffe18a;background:#071523}.bot-head b{display:block;color:#ffe18a;font-family:Cormorant Garamond}.bot-head small{color:#83cce8}.bot-close{margin-left:auto;background:none;border:0;color:#a9bdc8;font-size:22px;cursor:pointer}.bot-messages{flex:1;padding:14px;overflow:auto;display:flex;flex-direction:column;gap:10px}.bot-msg{max-width:86%;padding:10px 12px;border-radius:12px;border:1px solid rgba(69,207,255,.14);background:rgba(8,25,40,.75);color:#d6e5ec;line-height:1.45;font-size:13px}.bot-msg.user{align-self:flex-end;border-color:rgba(216,168,59,.2);background:rgba(64,43,12,.3);color:#ffe7aa}.bot-quick{display:flex;flex-wrap:wrap;gap:6px;padding:0 12px 10px}.bot-quick button{border:1px solid rgba(69,207,255,.2);border-radius:999px;background:rgba(69,207,255,.05);color:#a8e5ff;padding:6px 9px;cursor:pointer;font-size:11px}.bot-form{display:flex;gap:7px;padding:10px;border-top:1px solid rgba(255,255,255,.08)}.bot-form input{flex:1;min-width:0;border:1px solid rgba(69,207,255,.2);border-radius:10px;background:#06111c;color:#e7f6fc;padding:10px}.bot-form button{border:1px solid #d8a83b;border-radius:10px;background:rgba(216,168,59,.1);color:#ffe18a;padding:0 13px;cursor:pointer}
+@keyframes botPulse{0%,100%{transform:translateY(0);box-shadow:0 0 0 5px rgba(69,207,255,.05),0 0 35px rgba(69,207,255,.18)}50%{transform:translateY(-4px);box-shadow:0 0 0 8px rgba(69,207,255,.035),0 0 48px rgba(69,207,255,.28)}}
+@keyframes botIn{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:none}}
+@media(max-width:700px){.cosmic-bot{right:16px;bottom:16px}.bot-panel{height:460px}.hero{background-position:58% center}}
+</style>
+<style id="sgr-aesthetic-v6">
+/* ===== SAGITTARIUS A* / ESTÉTICA CÓSMICA V6 ===== */
+:root{
+  --sgr-bg:#020711;
+  --sgr-blue:#35cfff;
+  --sgr-blue2:#9be8ff;
+  --sgr-gold:#d8a83b;
+  --sgr-gold2:#ffe18a;
+  --sgr-white:#edf7ff;
+}
+body{
+  background:
+    radial-gradient(circle at 78% 12%,rgba(28,126,190,.14),transparent 24%),
+    radial-gradient(circle at 18% 78%,rgba(216,168,59,.07),transparent 22%),
+    linear-gradient(135deg,#01040a 0%,#03101d 48%,#01040a 100%);
+}
+body:after{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:-2;
+  opacity:.34;
+  background:
+    radial-gradient(circle at 10% 20%,#fff 0 1px,transparent 1.5px),
+    radial-gradient(circle at 33% 12%,#fff 0 1px,transparent 1.5px),
+    radial-gradient(circle at 61% 27%,#fff 0 1px,transparent 1.5px),
+    radial-gradient(circle at 83% 44%,#fff 0 1px,transparent 1.5px),
+    radial-gradient(circle at 46% 78%,#fff 0 1px,transparent 1.5px),
+    radial-gradient(circle at 92% 86%,#fff 0 1px,transparent 1.5px);
+  background-size:280px 230px,340px 280px,410px 330px,300px 260px,370px 300px,450px 360px;
+}
+.layout{
+  grid-template-columns:270px minmax(0,1fr) 320px;
+}
+.sidebar{
+  background:linear-gradient(180deg,rgba(2,7,13,.98),rgba(4,15,24,.95));
+  box-shadow:12px 0 45px rgba(0,0,0,.34),inset -1px 0 rgba(85,201,255,.08);
+}
+.nav a{
+  border:1px solid transparent;
+  position:relative;
+}
+.nav a:hover,.nav a:focus-visible{
+  border-color:rgba(216,168,59,.65);
+  box-shadow:0 0 24px rgba(216,168,59,.08),inset 0 0 18px rgba(216,168,59,.05);
+}
+.nav a[href="#contacto"]{color:#ffe18a}
+.hero{
+  min-height:560px;
+  background:
+    radial-gradient(circle at 84% 40%,rgba(69,207,255,.12),transparent 20%),
+    radial-gradient(circle at 72% 65%,rgba(216,168,59,.10),transparent 22%),
+    linear-gradient(90deg,rgba(2,7,13,.96),rgba(2,8,15,.76) 52%,rgba(2,8,15,.34));
+}
+.card,.project-intro,.week-card-arcane,.quest{
+  border-color:rgba(216,168,59,.34);
+  box-shadow:0 18px 55px rgba(0,0,0,.28),inset 0 0 25px rgba(53,207,255,.025);
+}
+.section-head{
+  border-bottom-color:rgba(216,168,59,.42);
+}
+.actions .btn,.btn-enter{
+  letter-spacing:.06em;
+}
+.right-rail{
+  position:sticky;
+  top:0;
+  height:100vh;
+  padding:28px 18px 24px;
+  border-left:1px solid rgba(216,168,59,.28);
+  background:linear-gradient(180deg,rgba(2,7,13,.96),rgba(3,13,22,.94));
+  overflow:auto;
+}
+.rail-card{
+  position:relative;
+  overflow:hidden;
+  margin-bottom:16px;
+  padding:18px;
+  border:1px solid rgba(216,168,59,.42);
+  border-radius:14px;
+  background:linear-gradient(150deg,rgba(8,22,34,.96),rgba(2,9,16,.98));
+  box-shadow:0 18px 55px rgba(0,0,0,.42),inset 0 0 30px rgba(53,207,255,.035);
+}
+.rail-card:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:radial-gradient(circle at 100% 0,rgba(53,207,255,.10),transparent 34%);
+}
+.rail-kicker{
+  color:var(--sgr-blue2);
+  font:700 10px Cormorant Garamond;
+  letter-spacing:.16em;
+  text-transform:uppercase;
+}
+.rail-card h3{
+  margin:6px 0 8px;
+  color:var(--sgr-gold2);
+  font:600 20px Cormorant Garamond;
+}
+.rail-card p{
+  margin:0;
+  color:#aebdc7;
+  line-height:1.55;
+  font-size:13px;
+}
+.social-grid{
+  display:grid;
+  gap:9px;
+  margin-top:14px;
+}
+.social-link{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:10px 11px;
+  border:1px solid rgba(53,207,255,.20);
+  border-radius:9px;
+  color:#dcecf4;
+  text-decoration:none;
+  background:rgba(53,207,255,.035);
+  transition:.2s ease;
+}
+.social-link:hover{
+  transform:translateX(-2px);
+  border-color:rgba(216,168,59,.72);
+  color:var(--sgr-gold2);
+  box-shadow:0 0 24px rgba(216,168,59,.08);
+}
+.social-icon{
+  width:27px;height:27px;display:grid;place-items:center;
+  border:1px solid rgba(216,168,59,.48);
+  border-radius:50%;
+  color:var(--sgr-gold2);
+  font:700 11px Cormorant Garamond;
+  flex:none;
+}
+.social-link small{
+  display:block;
+  color:#7893a2;
+  font-size:10px;
+  margin-top:2px;
+}
+.contact-note{
+  margin-top:12px!important;
+  padding-top:12px;
+  border-top:1px solid rgba(255,255,255,.08);
+}
+.rail-orbit{
+  width:112px;height:112px;margin:4px auto 15px;
+  position:relative;border-radius:50%;
+  display:grid;place-items:center;
+  background:
+    radial-gradient(circle,#000 0 29%,#05080d 30% 38%,transparent 39%),
+    conic-gradient(from 20deg,transparent,#dca53a,#fff0a9,#45cfff,#8b4b18,#dca53a,transparent);
+  box-shadow:0 0 35px rgba(216,168,59,.18),0 0 70px rgba(53,207,255,.08);
+  animation:sgrSpin 9s linear infinite;
+}
+.rail-orbit:before{
+  content:"";
+  position:absolute;
+  inset:13px;
+  border-radius:50%;
+  border:1px solid rgba(255,225,138,.55);
+  box-shadow:0 0 25px rgba(255,225,138,.18);
+}
+.rail-orbit:after{
+  content:"Sgr A*";
+  position:absolute;
+  bottom:-20px;
+  color:#83cce8;
+  font:600 10px Cormorant Garamond;
+  letter-spacing:.12em;
+}
+@keyframes sgrSpin{to{transform:rotate(360deg)}}
+
+/* Xal'tor becomes a Sagittarius A* singularity instead of a robot icon. */
+.cosmic-bot{right:26px;bottom:24px}
+.bot-toggle{
+  position:relative;
+  width:72px;height:72px;
+  border:0;
+  border-radius:50%;
+  color:transparent;
+  background:
+    radial-gradient(circle at 50% 50%,#000 0 30%,#02050a 31% 40%,transparent 41%),
+    conic-gradient(from 15deg,transparent,#6b310d,#f0a62c,#fff0a2,#46d8ff,#7b350d,#f0a62c,transparent);
+  box-shadow:0 0 10px rgba(255,210,100,.32),0 0 32px rgba(216,168,59,.25),0 0 65px rgba(53,207,255,.14);
+  animation:sgrBlackHole 4s ease-in-out infinite;
+}
+.bot-toggle:before{
+  content:"";
+  position:absolute;
+  inset:7px;
+  border-radius:50%;
+  border:1px solid rgba(255,225,138,.48);
+}
+.bot-toggle:after{
+  content:"";
+  position:absolute;
+  left:-8px;right:-8px;top:50%;
+  height:2px;
+  transform:translateY(-50%) rotate(-14deg);
+  border-radius:50%;
+  background:linear-gradient(90deg,transparent,#45cfff,#ffe18a,#ffb12b,#45cfff,transparent);
+  box-shadow:0 0 12px #45cfff;
+}
+@keyframes sgrBlackHole{
+  0%,100%{transform:scale(1) rotate(0);filter:saturate(1)}
+  50%{transform:scale(1.045) rotate(8deg);filter:saturate(1.22)}
+}
+.bot-avatar{
+  width:48px;height:48px;
+  position:relative;
+  color:transparent!important;
+  border:0!important;
+  background:
+    radial-gradient(circle,#000 0 28%,#02050a 29% 39%,transparent 40%),
+    conic-gradient(#6b310d,#f0a62c,#fff0a2,#45cfff,#7b350d,#f0a62c);
+  box-shadow:0 0 18px rgba(216,168,59,.24);
+}
+.bot-avatar:after{
+  content:"";
+  position:absolute;inset:5px;border-radius:50%;
+  border:1px solid rgba(255,225,138,.42);
+}
+.bot-panel{
+  border-color:rgba(216,168,59,.44);
+  border-radius:15px;
+  background:linear-gradient(160deg,rgba(3,13,23,.98),rgba(1,5,11,.99));
+  box-shadow:0 25px 90px rgba(0,0,0,.72),0 0 55px rgba(216,168,59,.10);
+}
+.bot-head{
+  background:linear-gradient(90deg,rgba(216,168,59,.09),rgba(53,207,255,.06));
+}
+.bot-head small{display:block}
+.bot-quick button:hover{
+  border-color:rgba(216,168,59,.65);
+  color:#ffe18a;
+}
+@media(max-width:1200px){
+  .layout{grid-template-columns:250px minmax(0,1fr)}
+  .right-rail{display:none}
+}
+@media(max-width:900px){
+  .layout{grid-template-columns:1fr}
+  .sidebar{position:relative;height:auto}
+}
+@media(max-width:700px){
+  .cosmic-bot{right:16px;bottom:16px}
+  .bot-toggle{width:64px;height:64px}
+}
+
+/* Contacto también queda disponible como sección visual en el flujo principal. */
+#contacto{
+  padding-top:35px;
+}
+.contact-inline{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+@media(max-width:700px){.contact-inline{grid-template-columns:1fr}}
+</style>
+<style>
+.social a{color:#ffe18a;text-decoration:none;font:700 11px Cormorant Garamond;min-width:26px;height:26px;display:grid;place-items:center;border:1px solid rgba(216,168,59,.34);border-radius:50%}
+.social a:hover{border-color:#ffe18a;box-shadow:0 0 16px rgba(216,168,59,.16);transform:translateY(-1px)}
+</style>
+<style id="final-reference-aesthetic">
+/* =========================================================
+   FINAL PASS — ESTÉTICA DE LA REFERENCIA / SAGITTARIUS A*
+   ========================================================= */
+html{scroll-behavior:smooth}
+body{
+  color:#dbeaf2;
+  background:#01050b;
+  overflow-x:hidden;
+}
+body:before{
+  content:"";
+  position:fixed;
+  z-index:-3;
+  inset:0;
+  background:
+    radial-gradient(ellipse at 78% 18%,rgba(61,170,255,.15),transparent 24%),
+    radial-gradient(ellipse at 74% 18%,rgba(255,170,55,.13),transparent 12%),
+    radial-gradient(ellipse at 15% 85%,rgba(86,151,255,.10),transparent 22%),
+    linear-gradient(180deg,#01040a 0%,#020b15 50%,#01040a 100%);
+}
+.layout{
+  display:grid;
+  grid-template-columns:250px minmax(0,1fr) 315px;
+  min-height:100vh;
+  gap:0;
+}
+.sidebar{
+  position:sticky;
+  top:0;
+  height:100vh;
+  z-index:20;
+  padding:24px 18px;
+  border-right:1px solid rgba(216,168,59,.42);
+  background:
+    radial-gradient(circle at 45% 20%,rgba(53,207,255,.08),transparent 25%),
+    linear-gradient(180deg,rgba(1,6,12,.985),rgba(3,13,22,.98));
+}
+.brand{padding-bottom:20px;border-bottom:1px solid rgba(216,168,59,.24)}
+.brand .logo{
+  box-shadow:0 0 0 5px rgba(216,168,59,.035),0 0 30px rgba(216,168,59,.18);
+}
+.brand h1{font-size:18px;line-height:1.18}
+.brand p{
+  color:#73c9e8;
+  letter-spacing:.14em;
+}
+.nav{margin-top:16px}
+.nav a{
+  margin:4px 0;
+  padding:12px 13px;
+  border:1px solid transparent;
+  color:#e7edf0;
+  border-radius:8px;
+}
+.nav a:hover,.nav a:focus-visible,.nav a[href="#proyectos"]{
+  color:#ffe18a;
+  border-color:rgba(216,168,59,.65);
+  background:
+    linear-gradient(90deg,rgba(216,168,59,.12),rgba(53,207,255,.025));
+  box-shadow:0 0 26px rgba(216,168,59,.08),inset 0 0 22px rgba(216,168,59,.035);
+}
+.social{
+  gap:8px;
+  flex-wrap:wrap;
+}
+.social a{
+  transition:.2s ease;
+}
+.quote{
+  font-family:Montserrat,sans-serif;
+  color:#c8bfa9;
+  font-size:13px;
+}
+
+/* Main hero — cinematic black-hole composition */
+main{
+  min-width:0;
+  background:
+    radial-gradient(circle at 84% 8%,rgba(69,207,255,.055),transparent 20%);
+}
+.hero{
+  min-height:590px;
+  padding:72px 5vw 56px;
+  position:relative;
+  overflow:hidden;
+  isolation:isolate;
+  display:flex;
+  align-items:flex-end;
+  border-bottom:1px solid rgba(216,168,59,.42);
+  background:
+    radial-gradient(circle at 82% 46%,#000 0 7%,rgba(0,0,0,.92) 7.5%,rgba(0,0,0,0) 19%),
+    conic-gradient(from 220deg at 82% 46%,
+      transparent 0deg,rgba(62,204,255,.03) 22deg,
+      rgba(242,166,56,.28) 50deg,rgba(255,226,132,.58) 72deg,
+      rgba(65,202,255,.18) 105deg,transparent 145deg,
+      transparent 260deg,rgba(242,166,56,.24) 300deg,transparent 330deg),
+    radial-gradient(ellipse at 82% 46%,rgba(255,176,50,.13),transparent 28%),
+    linear-gradient(90deg,rgba(1,5,10,.98),rgba(2,9,16,.76) 54%,rgba(2,7,13,.34));
+}
+.hero:before{
+  content:"";
+  position:absolute;
+  width:620px;height:250px;
+  right:-80px;top:95px;
+  border-radius:50%;
+  border:1px solid rgba(255,216,119,.42);
+  transform:rotate(-15deg);
+  box-shadow:
+    0 0 25px rgba(255,177,53,.28),
+    0 0 70px rgba(69,207,255,.13),
+    inset 0 0 32px rgba(255,177,53,.18);
+  opacity:.9;
+}
+.hero:after{
+  content:"";
+  position:absolute;
+  width:390px;height:390px;
+  right:65px;top:-5px;
+  border-radius:50%;
+  background:
+    radial-gradient(circle,#000 0 22%,#03060b 23% 27%,transparent 28%),
+    conic-gradient(from 10deg,transparent,#7c3d11,#ffd66d,#fff4bd,#43d6ff,#7c3d11,#f3a62b,transparent);
+  filter:blur(.25px);
+  opacity:.52;
+  transform:rotate(-12deg);
+  box-shadow:0 0 65px rgba(255,176,50,.12);
+}
+.hero-content{position:relative;z-index:3;max-width:850px}
+.eyebrow{
+  color:#82dfff;
+  text-shadow:0 0 16px rgba(69,207,255,.18);
+}
+.hero h2{
+  color:#f4d78e;
+  text-shadow:0 5px 32px rgba(0,0,0,.85),0 0 18px rgba(216,168,59,.08);
+}
+.hero .role{color:#e5edf1}
+.hero .intro{color:#aebfc9}
+.actions .btn{
+  border-color:rgba(216,168,59,.68);
+  box-shadow:inset 0 0 18px rgba(216,168,59,.035);
+}
+.actions .btn:hover{
+  box-shadow:0 0 28px rgba(216,168,59,.14);
+}
+
+/* Framed project area */
+.container{width:min(1200px,92%)}
+section{padding:50px 0}
+#proyectos{
+  position:relative;
+  margin:0 2.2%;
+  padding:24px 2.2% 45px;
+  border:1px solid rgba(216,168,59,.52);
+  border-radius:14px;
+  background:
+    linear-gradient(180deg,rgba(3,13,22,.84),rgba(1,7,13,.94)),
+    radial-gradient(circle at 30% 0,rgba(53,207,255,.055),transparent 35%);
+  box-shadow:
+    0 25px 80px rgba(0,0,0,.45),
+    inset 0 0 45px rgba(53,207,255,.025);
+}
+#proyectos:before,#proyectos:after{
+  content:"";
+  position:absolute;
+  width:48px;height:48px;
+  pointer-events:none;
+  border-color:rgba(255,225,138,.75);
+}
+#proyectos:before{
+  left:-1px;top:-1px;
+  border-left:2px solid;border-top:2px solid;
+  border-radius:14px 0 0 0;
+}
+#proyectos:after{
+  right:-1px;bottom:-1px;
+  border-right:2px solid;border-bottom:2px solid;
+  border-radius:0 0 14px 0;
+}
+.section-head{
+  padding-bottom:13px;
+  border-bottom-color:rgba(216,168,59,.42);
+}
+.section-head h2{color:#f0d38b}
+.section-head p{color:#7ccfe9}
+
+.card,.project-intro,.week-card-arcane,.quest{
+  background:
+    linear-gradient(145deg,rgba(5,19,31,.88),rgba(2,9,16,.95));
+  border-color:rgba(53,207,255,.22);
+}
+.week-card-arcane:hover,.quest:hover{
+  border-color:rgba(216,168,59,.56);
+  box-shadow:0 18px 50px rgba(0,0,0,.35),0 0 25px rgba(216,168,59,.055);
+}
+.unit-row,.unit-card{
+  background:linear-gradient(90deg,rgba(4,18,29,.9),rgba(2,9,16,.94));
+  border-color:rgba(53,207,255,.26);
+}
+.unit-row:hover,.unit-card:hover{
+  border-color:rgba(216,168,59,.55);
+}
+
+/* Right rail closely matches the reference's contact column */
+.right-rail{
+  position:sticky;
+  top:0;
+  height:100vh;
+  padding:22px 15px;
+  border-left:1px solid rgba(216,168,59,.38);
+  background:
+    radial-gradient(circle at 20% 20%,rgba(53,207,255,.055),transparent 26%),
+    linear-gradient(180deg,rgba(1,6,12,.985),rgba(2,10,18,.98));
+}
+.rail-card{
+  border-color:rgba(216,168,59,.48);
+  background:
+    linear-gradient(145deg,rgba(5,17,28,.96),rgba(1,7,13,.98));
+}
+.rail-card h3{font-size:19px}
+.rail-card p{color:#b6c5cd}
+.social-link{
+  border-color:rgba(53,207,255,.22);
+  background:rgba(53,207,255,.028);
+}
+.social-link:hover{
+  border-color:rgba(216,168,59,.68);
+  background:rgba(216,168,59,.035);
+}
+.rail-orbit{
+  margin-top:0;
+}
+
+/* Make the floating Xal'tor exactly the visual focal point: a miniature Sgr A*. */
+.bot-toggle{
+  width:76px;height:76px;
+  box-shadow:
+    0 0 8px rgba(255,225,138,.48),
+    0 0 28px rgba(255,173,49,.30),
+    0 0 70px rgba(53,207,255,.16);
+}
+.bot-panel{
+  width:min(390px,calc(100vw - 30px));
+  border-color:rgba(216,168,59,.52);
+}
+.bot-head b{color:#f5d98e}
+.bot-head small{color:#77d3f0}
+.bot-msg{
+  background:rgba(5,18,30,.82);
+}
+.bot-msg.user{
+  background:rgba(67,45,10,.25);
+}
+
+/* Footer */
+footer{
+  border-top-color:rgba(216,168,59,.35)!important;
+  background:rgba(1,5,10,.75);
+}
+
+/* Responsive */
+@media(max-width:1250px){
+  .layout{grid-template-columns:230px minmax(0,1fr) 285px}
+  .right-rail{padding-left:12px;padding-right:12px}
+}
+@media(max-width:1050px){
+  .layout{grid-template-columns:235px minmax(0,1fr)}
+  .right-rail{display:none}
+}
+@media(max-width:760px){
+  .layout{display:block}
+  .sidebar{position:relative;height:auto;border-right:0;border-bottom:1px solid rgba(216,168,59,.35)}
+  .hero{min-height:520px;padding:60px 7vw 45px}
+  .hero:after{right:-110px;opacity:.35}
+  #proyectos{margin:0 3%;padding:18px 3% 35px}
+}
+</style>
+<style>
+.infographic-gallery{
+  width:100%;
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:14px;
+  margin-top:12px;
+}
+.infographic-item{
+  margin:0;
+  padding:10px;
+  border:1px solid rgba(212,154,42,.25);
+  border-radius:10px;
+  background:#06111a;
+}
+.infographic-item img{
+  display:block;
+  width:100%;
+  height:auto;
+  max-height:620px;
+  object-fit:contain;
+  border-radius:7px;
+}
+.infographic-item figcaption{
+  color:#91a5b1;
+  font-size:12px;
+  text-align:center;
+  padding-top:8px;
+}
+@media(max-width:700px){
+  .infographic-gallery{grid-template-columns:1fr;}
+}
+</style>
+<style id="portfolio-editable-overrides">
+/* ===== AJUSTES SOLICITADOS: LOGIN + UNIDADES ===== */
+#login-screen{background:#020711 url("assets/agujero-negro-login.svg") center/cover no-repeat;animation:loginFade .7s ease both}
+#login-screen:before{background:radial-gradient(circle at 50% 50%,rgba(53,207,255,.05),transparent 42%),linear-gradient(90deg,rgba(0,0,0,.18),rgba(0,0,0,.02) 50%,rgba(0,0,0,.18));}
+#login-screen:after{background:radial-gradient(circle at 50% 50%,transparent 0 18%,rgba(0,0,0,.06) 36%,rgba(0,0,0,.62) 100%);}
+.gate-frame{border-color:rgba(53,207,255,.72);box-shadow:0 0 0 1px rgba(155,232,255,.07),0 25px 80px rgba(0,0,0,.72),0 0 45px rgba(53,207,255,.10),inset 0 0 35px rgba(53,207,255,.035)}
+.gate-frame:before{border-color:rgba(53,207,255,.20)}
+.gate-frame:after{background:linear-gradient(90deg,transparent,rgba(155,232,255,.8),transparent)}
+.login-emblem{border-color:var(--sgr-blue2);color:var(--sgr-blue2);box-shadow:0 0 28px rgba(53,207,255,.22),inset 0 0 22px rgba(53,207,255,.08)}
+.login-emblem:before,.login-emblem:after{color:var(--sgr-blue2)}
+.gate-title{color:var(--sgr-blue2);text-shadow:0 0 20px rgba(53,207,255,.18)}
+.login-rune{color:var(--sgr-blue)}
+.input-wrap{border-color:rgba(53,207,255,.42)}
+.input-wrap:focus-within{border-color:var(--sgr-blue2);box-shadow:0 0 20px rgba(53,207,255,.13),inset 0 0 15px rgba(53,207,255,.04)}
+.input-wrap span{color:var(--sgr-blue2)}
+.btn-enter{border-color:var(--sgr-blue2);background:linear-gradient(135deg,#35cfff,#078ab9);color:#02101a;box-shadow:0 10px 30px rgba(53,207,255,.20)}
+.btn-enter:hover{box-shadow:0 14px 38px rgba(53,207,255,.32)}
+.unit-card-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;margin-top:22px}
+.unit-card{position:relative;min-height:210px;padding:36px 72px 30px 30px;display:flex;flex-direction:column;justify-content:center;gap:8px;text-decoration:none;overflow:hidden;border:2px solid rgba(53,207,255,.78);border-radius:12px;background:linear-gradient(145deg,rgba(2,10,19,.97),rgba(3,13,24,.92));box-shadow:0 0 26px rgba(53,207,255,.10),inset 0 0 28px rgba(53,207,255,.025);transition:.28s ease;color:#fff}
+.unit-card:before{content:"";position:absolute;inset:0;background:var(--unit-image) center/cover no-repeat;opacity:.20;filter:saturate(.8);transition:.28s}
+.unit-card:not(.has-image):before{display:none}.unit-card>*{position:relative;z-index:1}.unit-card-number{font:700 12px Cormorant Garamond;letter-spacing:.15em;color:var(--sgr-blue);text-shadow:0 0 14px rgba(53,207,255,.25)}
+.unit-card strong{font:700 23px Cormorant Garamond;color:#f0fbff;letter-spacing:.02em}.unit-card-desc{color:#a9bac6;font:500 14px Montserrat;line-height:1.45;max-width:90%}
+.unit-card-arrow{position:absolute;right:22px;top:50%;transform:translateY(-50%);width:46px;height:46px;border:2px solid var(--sgr-blue);border-radius:50%;display:grid;place-items:center;color:var(--sgr-blue);font:400 35px Arial;line-height:1;box-shadow:0 0 18px rgba(53,207,255,.22);transition:.28s;background:rgba(1,8,15,.5)}
+.unit-card:hover{transform:translateY(-4px);border-color:var(--sgr-blue2);box-shadow:0 0 34px rgba(53,207,255,.18),inset 0 0 35px rgba(53,207,255,.05)}
+.unit-card:hover .unit-card-arrow{transform:translateY(-50%) translateX(4px) scale(1.08);box-shadow:0 0 30px rgba(53,207,255,.45)}
+@media(max-width:760px){.unit-card-grid{grid-template-columns:1fr}.unit-card{min-height:180px}}
+</style>
+<style id="public-cosmic-redesign">
+/* =========================================================
+   REDISEÑO PÚBLICO — COSMIC GLASS / AURORA TECH
+   Mantiene el contenido y las rutas existentes.
+   ========================================================= */
+:root{
+  --bg:#03050b;
+  --bg2:#07101c;
+  --panel:rgba(8,14,25,.76);
+  --panel-strong:rgba(7,12,21,.94);
+  --cyan:#58d9ff;
+  --cyan-soft:#9cecff;
+  --violet:#a77bff;
+  --violet-soft:#d2baff;
+  --gold:#ffb83e;
+  --gold-soft:#ffe3a0;
+  --white:#f4f8ff;
+  --muted:#9aa9bd;
+  --line:rgba(117,177,221,.22);
+  --shadow:0 22px 70px rgba(0,0,0,.45);
+}
+
+html{scroll-behavior:smooth}
+body{
+  min-height:100vh;
+  overflow-x:hidden;
+  color:var(--white);
+  font-family:Montserrat,Segoe UI,Roboto,Arial,sans-serif;
+  background:
+    radial-gradient(circle at 15% 15%,rgba(72,217,255,.10),transparent 25%),
+    radial-gradient(circle at 85% 22%,rgba(167,123,255,.10),transparent 26%),
+    linear-gradient(135deg,#02040a 0%,#06101b 48%,#02040a 100%);
+}
+body:before{
+  opacity:.42;
+  background-image:
+    linear-gradient(rgba(255,255,255,.022) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px),
+    url("assets/backgrounds/cosmic-background-1.png");
+  background-size:42px 42px,42px 42px,cover;
+  background-position:center;
+  background-attachment:fixed;
+}
+body:after{
+  content:"";
+  position:fixed;
+  inset:-20%;
+  z-index:-1;
+  pointer-events:none;
+  background:
+    radial-gradient(circle at 50% 20%,rgba(88,217,255,.07),transparent 18%),
+    radial-gradient(circle at 72% 70%,rgba(255,184,62,.06),transparent 18%);
+  animation:ambientDrift 16s ease-in-out infinite alternate;
+}
+@keyframes ambientDrift{from{transform:translate3d(-1%,0,0) scale(1)}to{transform:translate3d(1%,1%,0) scale(1.04)}}
+
+.app-screen{display:block!important;min-height:100vh}
+
+/* Top navigation */
+.layout{
+  display:block!important;
+  min-height:100vh;
+}
+.sidebar{
+  position:sticky!important;
+  top:0;
+  z-index:100;
+  width:100%!important;
+  height:auto!important;
+  min-height:72px;
+  padding:12px clamp(18px,4vw,55px)!important;
+  display:flex!important;
+  flex-direction:row!important;
+  align-items:center;
+  gap:22px;
+  border-right:0!important;
+  border-bottom:1px solid rgba(111,193,234,.20)!important;
+  background:rgba(2,6,13,.78)!important;
+  backdrop-filter:blur(22px) saturate(140%);
+  box-shadow:0 10px 35px rgba(0,0,0,.28);
+}
+.brand{
+  display:flex!important;
+  align-items:center;
+  gap:12px;
+  padding:0!important;
+  border:0!important;
+  text-align:left!important;
+  flex:0 0 auto;
+}
+.logo{
+  width:44px!important;
+  height:44px!important;
+  margin:0!important;
+  border:1px solid rgba(88,217,255,.8)!important;
+  color:var(--cyan-soft)!important;
+  font-size:17px!important;
+  box-shadow:0 0 22px rgba(88,217,255,.16)!important;
+  background:radial-gradient(circle,rgba(88,217,255,.10),transparent 68%);
+}
+.brand h1{
+  margin:0!important;
+  font:700 14px/1.1 Montserrat,Segoe UI,sans-serif!important;
+  letter-spacing:.08em!important;
+  color:var(--white)!important;
+}
+.brand p{
+  margin:4px 0 0!important;
+  font:500 10px/1 Montserrat,Segoe UI,sans-serif!important;
+  color:var(--cyan)!important;
+  letter-spacing:.12em;
+}
+.nav{
+  display:flex!important;
+  align-items:center;
+  justify-content:center;
+  gap:4px!important;
+  margin:0 auto!important;
+}
+.nav a{
+  position:relative;
+  padding:10px 13px!important;
+  border:0!important;
+  border-radius:9px!important;
+  color:#cbd6e4!important;
+  font:600 13px Montserrat,Segoe UI,sans-serif!important;
+  transition:.25s ease;
+}
+.nav a:after{
+  content:"";
+  position:absolute;
+  left:13px;
+  right:13px;
+  bottom:3px;
+  height:2px;
+  border-radius:2px;
+  background:linear-gradient(90deg,var(--cyan),var(--violet));
+  transform:scaleX(0);
+  transform-origin:center;
+  transition:.25s;
+}
+.nav a:hover{
+  color:#fff!important;
+  background:rgba(88,217,255,.07)!important;
+  transform:none!important;
+}
+.nav a:hover:after{transform:scaleX(1)}
+.social{
+  display:flex!important;
+  gap:7px!important;
+  padding:0!important;
+  margin-left:auto;
+}
+.social a{
+  width:33px;
+  height:33px;
+  display:grid;
+  place-items:center;
+  border:1px solid rgba(137,190,225,.20);
+  border-radius:50%;
+  color:#d7e9f7;
+  text-decoration:none;
+  font:700 11px Montserrat,Segoe UI,sans-serif;
+  background:rgba(255,255,255,.025);
+  transition:.25s;
+}
+.social a:hover{
+  color:#06101a;
+  background:var(--cyan);
+  border-color:var(--cyan);
+  box-shadow:0 0 22px rgba(88,217,255,.28);
+}
+.quote{display:none!important}
+
+/* Main hero */
+main{min-width:0}
+.hero{
+  min-height:650px!important;
+  padding:clamp(90px,12vh,150px) clamp(24px,7vw,110px) 80px!important;
+  display:flex;
+  align-items:center!important;
+  position:relative;
+  overflow:hidden;
+  border-bottom:1px solid rgba(100,177,219,.18)!important;
+  background:
+    linear-gradient(90deg,rgba(2,6,13,.97) 0%,rgba(2,7,15,.84) 43%,rgba(2,7,15,.25) 100%),
+    url("assets/backgrounds/cosmic-background-1.png") center/cover no-repeat!important;
+}
+.hero:before{
+  content:"";
+  position:absolute;
+  width:520px;height:520px;
+  right:4%;top:50%;
+  transform:translateY(-50%);
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(255,174,50,.17),rgba(88,217,255,.04) 38%,transparent 68%);
+  filter:blur(8px);
+  animation:heroGlow 7s ease-in-out infinite;
+}
+@keyframes heroGlow{50%{transform:translateY(-50%) scale(1.08);opacity:.8}}
+.hero:after{
+  content:"";
+  position:absolute;
+  inset:auto 0 25px;
+  height:1px;
+  background:linear-gradient(90deg,transparent,rgba(88,217,255,.45),rgba(167,123,255,.35),transparent);
+  box-shadow:0 0 18px rgba(88,217,255,.15);
+}
+.hero-content{
+  max-width:850px!important;
+  z-index:2;
+}
+.eyebrow{
+  display:inline-flex;
+  padding:8px 12px;
+  border:1px solid rgba(88,217,255,.25);
+  border-radius:999px;
+  background:rgba(88,217,255,.05);
+  color:var(--cyan-soft)!important;
+  font:700 10px Montserrat,Segoe UI,sans-serif!important;
+  letter-spacing:.18em!important;
+}
+.hero h2{
+  margin:22px 0 18px!important;
+  font:800 clamp(2.8rem,6vw,6rem)/.95 Montserrat,Segoe UI,sans-serif!important;
+  letter-spacing:-.055em;
+  color:#f6f9ff!important;
+  text-shadow:0 15px 55px rgba(0,0,0,.65);
+}
+.hero h2 br{display:none}
+.hero h2:after{
+  content:"";
+  display:block;
+  width:min(280px,60%);
+  height:4px;
+  margin-top:22px;
+  border-radius:5px;
+  background:linear-gradient(90deg,var(--cyan),var(--violet),transparent);
+  box-shadow:0 0 20px rgba(88,217,255,.22);
+}
+.hero .role{
+  color:#c8d6e5!important;
+  font:500 17px Montserrat,Segoe UI,sans-serif!important;
+}
+.hero .intro{
+  max-width:690px!important;
+  margin:20px 0 30px!important;
+  color:#9fb0c4!important;
+  font:400 16px/1.8 Montserrat,Segoe UI,sans-serif!important;
+}
+.actions{gap:12px!important}
+.btn{
+  padding:12px 18px!important;
+  border-radius:10px!important;
+  border:1px solid rgba(88,217,255,.38)!important;
+  color:var(--cyan-soft)!important;
+  background:rgba(88,217,255,.045)!important;
+  font:700 13px Montserrat,Segoe UI,sans-serif!important;
+  transition:.25s!important;
+}
+.btn:hover{
+  transform:translateY(-2px);
+  border-color:var(--cyan)!important;
+  box-shadow:0 12px 30px rgba(88,217,255,.12);
+}
+.btn.primary{
+  color:#07111b!important;
+  border-color:#b7efff!important;
+  background:linear-gradient(135deg,var(--cyan),#7ea7ff)!important;
+  box-shadow:0 12px 32px rgba(88,217,255,.18)!important;
+}
+
+/* Sections */
+section{padding:78px 0!important}
+.container{width:min(1180px,90%)!important}
+.section-head{
+  display:flex!important;
+  align-items:flex-end;
+  gap:12px;
+  margin-bottom:25px!important;
+  padding-bottom:13px!important;
+  border-bottom:1px solid rgba(111,193,234,.16)!important;
+}
+.section-head .mark{color:var(--cyan)!important}
+.section-head h2{
+  margin:0!important;
+  color:#f0f5ff!important;
+  font:800 25px Montserrat,Segoe UI,sans-serif!important;
+  letter-spacing:-.02em;
+}
+.section-head p{
+  margin:0 0 2px auto!important;
+  color:#71849a!important;
+  font:500 11px Montserrat,Segoe UI,sans-serif!important;
+}
+
+/* Glass cards */
+.card,.project-intro,.quest,.week-card-arcane,.unit-banner-arcane{
+  border:1px solid rgba(119,182,223,.17)!important;
+  border-radius:18px!important;
+  background:
+    linear-gradient(145deg,rgba(10,20,35,.82),rgba(3,9,17,.90))!important;
+  backdrop-filter:blur(14px);
+  box-shadow:var(--shadow)!important;
+}
+.card:hover{
+  border-color:rgba(88,217,255,.30)!important;
+}
+.profile{gap:25px!important}
+.profile img,.profile-photo img{
+  border-color:rgba(88,217,255,.65)!important;
+  box-shadow:0 0 35px rgba(88,217,255,.12);
+}
+.card h3{
+  color:var(--white)!important;
+  font:750 18px Montserrat,Segoe UI,sans-serif!important;
+}
+.card p,.profile-bio{color:#aab8ca!important}
+.stats .stat,.sheet-grid .stat{
+  border:1px solid rgba(132,180,216,.11)!important;
+  border-radius:12px!important;
+  background:rgba(255,255,255,.025)!important;
+}
+.stat b,.stat .k{color:var(--cyan)!important}
+.stat span,.stat .v{color:#e0e9f4!important}
+.skill-pill,.chip{
+  border-color:rgba(88,217,255,.20)!important;
+  background:rgba(88,217,255,.045)!important;
+  color:#bcefff!important;
+}
+
+/* Skills */
+.skill{
+  border:1px solid rgba(126,179,214,.12)!important;
+  border-radius:12px!important;
+  background:rgba(255,255,255,.02)!important;
+}
+.skill b{color:var(--cyan-soft)}
+.bar{
+  background:#101c2b!important;
+  height:6px!important;
+}
+.bar i{
+  background:linear-gradient(90deg,var(--cyan),var(--violet))!important;
+}
+
+/* Project / unit area */
+#proyectos{
+  margin:0!important;
+  padding:80px 0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#proyectos:before,#proyectos:after{display:none}
+.project-intro{
+  padding:24px 26px!important;
+  border-color:rgba(167,123,255,.20)!important;
+}
+.arcane-label{color:var(--cyan)!important}
+.project-intro h3{color:#f5f8ff!important;font:750 21px Montserrat,Segoe UI,sans-serif!important}
+.project-intro p{color:#9aaec2!important}
+.project-rune{
+  border-color:rgba(167,123,255,.5)!important;
+  color:var(--violet-soft)!important;
+  box-shadow:0 0 30px rgba(167,123,255,.13)!important;
+}
+.unit-card-grid{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:18px!important;
+  margin-top:22px!important;
+}
+.unit-card{
+  min-height:210px!important;
+  padding:28px 70px 28px 28px!important;
+  border:1px solid rgba(88,217,255,.18)!important;
+  border-radius:18px!important;
+  background:
+    linear-gradient(135deg,rgba(8,18,31,.91),rgba(4,9,18,.97))!important;
+  box-shadow:0 16px 45px rgba(0,0,0,.30)!important;
+  transition:.3s ease!important;
+}
+.unit-card:before{opacity:.12!important}
+.unit-card:hover{
+  transform:translateY(-5px)!important;
+  border-color:rgba(88,217,255,.52)!important;
+  box-shadow:0 22px 55px rgba(0,0,0,.40),0 0 30px rgba(88,217,255,.07)!important;
+}
+.unit-card-number{
+  color:var(--cyan)!important;
+  font:800 10px Montserrat,Segoe UI,sans-serif!important;
+  letter-spacing:.18em!important;
+}
+.unit-card strong{
+  color:#f5f8ff!important;
+  font:750 21px Montserrat,Segoe UI,sans-serif!important;
+}
+.unit-card-desc{
+  color:#8fa3b8!important;
+  font:500 13px/1.5 Montserrat,Segoe UI,sans-serif!important;
+}
+.unit-card-arrow{
+  border-color:rgba(167,123,255,.55)!important;
+  color:var(--violet-soft)!important;
+  background:rgba(167,123,255,.05)!important;
+}
+
+/* Evidence / internal academic content */
+.quest-media,.reg-card-media,.sgbd-card-media{
+  border-radius:14px!important;
+  background:rgba(2,7,14,.72)!important;
+  border-color:rgba(88,217,255,.14)!important;
+}
+.quest-media img,.reg-card-media img,.sgbd-card-media img{
+  border-radius:10px!important;
+}
+.week-card-arcane:hover,.quest:hover{
+  transform:translateY(-2px);
+  border-color:rgba(88,217,255,.34)!important;
+}
+.week-orb{
+  border-color:rgba(88,217,255,.32)!important;
+  color:var(--cyan)!important;
+}
+
+/* Contact */
+#contacto .social-link,.right-rail .social-link{
+  border:1px solid rgba(120,181,219,.15)!important;
+  border-radius:12px!important;
+  background:rgba(255,255,255,.025)!important;
+  color:#d9e7f5!important;
+  transition:.25s;
+}
+#contacto .social-link:hover,.right-rail .social-link:hover{
+  border-color:rgba(88,217,255,.42)!important;
+  background:rgba(88,217,255,.06)!important;
+}
+.social-icon{
+  border-color:rgba(88,217,255,.30)!important;
+  color:var(--cyan)!important;
+}
+
+/* Right rail becomes a clean information band on wide screens */
+.right-rail{
+  position:relative!important;
+  top:auto!important;
+  height:auto!important;
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:18px;
+  padding:0 5%!important;
+  border:0!important;
+  background:transparent!important;
+}
+.rail-card{
+  padding:24px!important;
+  border:1px solid rgba(119,182,223,.16)!important;
+  border-radius:18px!important;
+  background:rgba(6,13,23,.72)!important;
+  backdrop-filter:blur(14px);
+}
+.rail-card h3{color:#f4f8ff!important}
+.rail-card p{color:#91a5ba!important}
+.rail-kicker{color:var(--cyan)!important}
+.rail-orbit{opacity:.55}
+
+/* Assistant */
+.bot-toggle{
+  width:64px!important;
+  height:64px!important;
+  border:1px solid rgba(88,217,255,.70)!important;
+  background:radial-gradient(circle at 35% 30%,#fff,#58d9ff 18%,#3856a8 45%,#060912 70%)!important;
+  box-shadow:0 0 18px rgba(88,217,255,.28),0 0 50px rgba(167,123,255,.15)!important;
+}
+.bot-panel{
+  border-color:rgba(88,217,255,.28)!important;
+  border-radius:18px!important;
+  background:rgba(4,10,19,.94)!important;
+  backdrop-filter:blur(18px);
+}
+
+/* Footer */
+footer{
+  margin-top:40px;
+  border-top:1px solid rgba(111,193,234,.14)!important;
+  background:rgba(1,4,9,.70)!important;
+  color:#687b91!important;
+}
+footer strong{color:#cdefff!important}
+
+/* Small entrance animations */
+.hero-content,.card,.unit-card,.project-intro{
+  animation:riseIn .65s ease both;
+}
+@keyframes riseIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+/* Responsive */
+@media(max-width:1050px){
+  .sidebar{gap:14px}
+  .brand h1{font-size:12px!important}
+  .nav a{padding:9px 9px!important}
+  .social{display:none!important}
+  .right-rail{grid-template-columns:1fr!important}
+}
+@media(max-width:760px){
+  .sidebar{
+    position:relative!important;
+    align-items:flex-start;
+    flex-wrap:wrap;
+    padding:12px 18px!important;
+  }
+  .brand{width:100%}
+  .nav{
+    width:100%;
+    overflow-x:auto;
+    justify-content:flex-start;
+    padding-bottom:2px;
+  }
+  .nav a{white-space:nowrap}
+  .hero{
+    min-height:560px!important;
+    padding:80px 7vw 60px!important;
+  }
+  .hero h2{font-size:clamp(2.5rem,12vw,4rem)!important}
+  .hero h2 br{display:none}
+  .hero .intro{font-size:15px!important}
+  section{padding:58px 0!important}
+  .section-head{align-items:flex-start;flex-wrap:wrap}
+  .section-head p{width:100%;margin:0!important}
+  .grid2{grid-template-columns:1fr!important}
+  .profile{grid-template-columns:1fr!important}
+  .profile-photo img{width:150px!important}
+  .unit-card-grid{grid-template-columns:1fr!important}
+  .unit-card{min-height:185px!important}
+  .right-rail{padding:0 5%!important}
+  .contact-inline{grid-template-columns:1fr!important}
+}
+@media(max-width:520px){
+  .brand h1{font-size:11px!important}
+  .brand p{font-size:9px!important}
+  .hero{min-height:530px!important}
+  .actions{flex-direction:column;align-items:stretch}
+  .btn{justify-content:center}
+  .skills{grid-template-columns:1fr!important}
+  .project-intro{padding:20px!important}
+}
+</style>
+<style id="upla-brand-social-v2">
+.brand{position:relative}
+.brand .upla-logo{width:108px;height:108px;object-fit:contain;display:block;margin:0 auto 12px;filter:drop-shadow(0 0 18px rgba(69,207,255,.16));border-radius:8px}
+.brand .portfolio-title{font:700 17px Cormorant Garamond,serif;color:#ffe18a;letter-spacing:.08em;margin:0 0 6px}
+.brand .portfolio-name{font:700 12px Cormorant Garamond,serif;color:#73c9e8;letter-spacing:.11em;margin:0}
+.hero-brand{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+.hero-brand img{width:62px;height:62px;object-fit:contain;border-radius:7px;filter:drop-shadow(0 0 16px rgba(69,207,255,.18))}
+.hero-brand span{font:700 12px Cormorant Garamond;color:#ffe18a;letter-spacing:.14em}
+.social-icon svg{width:22px;height:22px;display:block;fill:currentColor}
+.social-icon.brand-facebook{color:#1877f2!important}
+.social-icon.brand-instagram{color:#e1306c!important}
+.social-icon.brand-tiktok{color:#fff!important}
+.social-icon.brand-whatsapp{color:#25d366!important}
+#contacto .social-icon,.right-rail .social-icon{display:grid;place-items:center;width:34px;height:34px;border:0!important;background:rgba(255,255,255,.045);border-radius:10px!important}
+@media(max-width:700px){.brand .upla-logo{width:82px;height:82px}.hero-brand img{width:50px;height:50px}}
+</style>
+<style id="public-access-v1">
+/* ===== PORTAFOLIO PÚBLICO / ROLES / CURSOR ===== */
+body{cursor:default}
+a,button,summary,select,input,textarea{cursor:pointer}
+.access-bar{
+  position:fixed;top:16px;right:20px;z-index:9500;display:flex;align-items:center;gap:8px;
+  padding:8px;border:1px solid rgba(69,207,255,.20);border-radius:14px;
+  background:rgba(2,9,18,.78);backdrop-filter:blur(16px);box-shadow:0 12px 35px rgba(0,0,0,.32);
+}
+.access-status{display:flex;align-items:center;gap:7px;padding:0 8px;color:#a9c0cf;font:600 11px Cormorant Garamond;letter-spacing:.04em}
+.status-dot{width:7px;height:7px;border-radius:50%;background:#58d9ff;box-shadow:0 0 12px #58d9ff;animation:statusPulse 2s infinite}
+.access-btn{
+  border:1px solid rgba(216,168,59,.38);border-radius:9px;padding:9px 12px;
+  background:rgba(216,168,59,.07);color:#ffe18a;font:600 11px Cormorant Garamond;transition:.22s;
+}
+.access-btn:hover:not(:disabled){transform:translateY(-2px);border-color:#ffe18a;box-shadow:0 8px 24px rgba(216,168,59,.15)}
+.edit-btn{border-color:rgba(69,207,255,.32);color:#9be8ff;background:rgba(69,207,255,.06)}
+.access-btn:disabled{opacity:.42;cursor:not-allowed}
+.logout-btn{color:#ffcfaa;border-color:rgba(255,145,100,.28)}
+
+.auth-modal{position:fixed;inset:0;z-index:10000;display:none;align-items:center;justify-content:center;padding:20px}
+.auth-modal.open{display:flex}
+.auth-backdrop{position:absolute;inset:0;background:rgba(0,3,8,.78);backdrop-filter:blur(7px)}
+.auth-card{
+  position:relative;z-index:1;width:min(430px,94vw);padding:32px;border-radius:20px;
+  border:1px solid rgba(216,168,59,.55);background:linear-gradient(145deg,rgba(7,20,34,.98),rgba(2,8,17,.99));
+  box-shadow:0 30px 100px rgba(0,0,0,.7),0 0 45px rgba(69,207,255,.10);animation:authIn .3s ease both
+}
+.auth-close{position:absolute;right:14px;top:10px;border:0;background:none;color:#9db0bd;font-size:28px}
+.auth-orb{width:58px;height:58px;display:grid;place-items:center;margin:0 auto 12px;border:1px solid #ffe18a;border-radius:50%;color:#ffe18a;box-shadow:0 0 30px rgba(216,168,59,.18)}
+.auth-kicker{color:#45cfff;font:700 10px Cormorant Garamond;letter-spacing:.18em;text-align:center}
+.auth-card h2{margin:7px 0;color:#ffe18a;font:700 25px Cormorant Garamond;text-align:center}
+.auth-card p{color:#9fb2c0;text-align:center;line-height:1.5;font-size:13px}
+.auth-label{display:block;margin:13px 0 6px;color:#a9c8d8;font:600 11px Cormorant Garamond}
+.auth-input{width:100%;box-sizing:border-box;padding:12px 13px;border:1px solid rgba(69,207,255,.24);border-radius:10px;background:#06111c;color:#edf7ff;outline:none}
+.auth-input:focus{border-color:#ffe18a;box-shadow:0 0 18px rgba(216,168,59,.10)}
+.auth-submit{width:100%;margin-top:17px;padding:12px;border:1px solid #d8a83b;border-radius:10px;background:linear-gradient(135deg,#d8a83b,#8e620d);color:#130e05;font-weight:800}
+.auth-hint{margin-top:10px;color:#7fa8ba;font-size:11px;text-align:center}
+.auth-error{min-height:18px;margin-top:6px;color:#ff9e8d;text-align:center;font-size:12px}
+.auth-note{margin-top:16px;padding-top:12px;border-top:1px solid rgba(255,255,255,.08);color:#718896;font-size:10px;line-height:1.5;text-align:center}
+
+.edit-panel{
+  position:fixed;right:20px;top:78px;z-index:9400;width:min(390px,calc(100vw - 40px));display:none;
+  padding:18px;border:1px solid rgba(69,207,255,.28);border-radius:16px;background:rgba(3,12,22,.96);
+  box-shadow:0 20px 70px rgba(0,0,0,.6);backdrop-filter:blur(16px)
+}
+.edit-panel.open{display:block;animation:authIn .25s ease both}
+.edit-panel-head{display:flex;justify-content:space-between;align-items:start;gap:12px}
+.edit-panel-head span{display:block;color:#45cfff;font:700 10px Cormorant Garamond;letter-spacing:.12em}
+.edit-panel-head strong{display:block;margin-top:4px;color:#ffe18a;font:700 18px Cormorant Garamond}
+.edit-panel-head button{border:0;background:none;color:#a9bdc8;font-size:22px}
+.edit-panel p,.edit-panel small{color:#849aa8;font-size:11px;line-height:1.5}
+.edit-panel label{display:block;margin:10px 0;color:#a9c8d8;font:600 10px Cormorant Garamond}
+.edit-panel input,.edit-panel textarea{width:100%;box-sizing:border-box;margin-top:5px;padding:9px;border:1px solid rgba(69,207,255,.2);border-radius:8px;background:#06111c;color:#edf7ff;resize:vertical}
+.edit-actions{display:flex;gap:8px;margin-top:14px}
+.edit-actions button{flex:1;padding:10px;border-radius:8px;border:1px solid rgba(216,168,59,.35);background:rgba(216,168,59,.08);color:#ffe18a}
+.edit-actions .save-edit{background:linear-gradient(135deg,#d8a83b,#8e620d);color:#160f04;font-weight:800}
+
+.cursor-glow{position:fixed;z-index:99999;pointer-events:none;width:180px;height:180px;border-radius:50%;transform:translate(-50%,-50%);
+ background:radial-gradient(circle,rgba(69,207,255,.13) 0,rgba(69,207,255,.05) 25%,transparent 68%);mix-blend-mode:screen}
+.cursor-ring{position:fixed;z-index:99998;pointer-events:none;width:22px;height:22px;border:1px solid rgba(255,225,138,.65);border-radius:50%;transform:translate(-50%,-50%);transition:width .15s,height .15s,border-color .15s}
+.cursor-ring.hover{width:38px;height:38px;border-color:#45cfff;box-shadow:0 0 20px rgba(69,207,255,.25)}
+.cursor-spark{position:fixed;z-index:99997;pointer-events:none;width:4px;height:4px;border-radius:50%;background:#ffe18a;box-shadow:0 0 12px #45cfff;animation:sparkFade .65s ease-out forwards}
+@keyframes statusPulse{50%{opacity:.45;transform:scale(.7)}}
+@keyframes authIn{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:none}}
+@keyframes sparkFade{from{opacity:.9;transform:scale(1)}to{opacity:0;transform:translateY(-15px) scale(.2)}}
+@media(max-width:700px){
+ .access-bar{top:10px;right:10px;left:10px;justify-content:flex-end}.access-status{margin-right:auto}
+ .access-btn{padding:8px 9px;font-size:10px}.cursor-glow,.cursor-ring,.cursor-spark{display:none}
+}
+</style>
+<link href="assets/galactic-enhancements.css" rel="stylesheet"/>
+<style id="admin-media-actions-css">
+.admin-media-actions{display:flex;justify-content:center;align-items:center;gap:8px;margin:10px auto 0;flex-wrap:wrap;position:relative;z-index:5}.admin-media-actions .admin-media-control{position:static!important;display:inline-flex!important;align-items:center;justify-content:center;padding:8px 12px;border-radius:8px;border:1px solid rgba(69,207,255,.3);background:rgba(5,18,30,.92);color:#bceeff;font:700 11px Cormorant Garamond;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.25)}.admin-media-actions .admin-delete-control{border-color:rgba(255,100,100,.35);color:#ffb1b1;background:rgba(70,12,18,.9)}.admin-file-actions{margin:8px 0 0}.admin-file-actions .admin-media-control{position:static!important}
+</style>
+<style>
+/* Restauración: logo UPLA y efecto de choque planetario */
+.brand .upla-logo{display:block!important;visibility:visible!important;opacity:1!important;width:108px!important;height:108px!important;object-fit:contain!important;}
+.hero-brand img{display:inline-block!important;visibility:visible!important;opacity:1!important;}
+.cosmos-video-wrap{position:relative;overflow:hidden;}
+.cosmos-video{display:block!important;visibility:visible!important;opacity:1!important;width:100%!important;max-height:520px!important;object-fit:cover!important;}
+</style><link rel="stylesheet" href="assets/content-editor.css"><link rel="stylesheet" href="assets/efectos.css"><link rel="stylesheet" href="assets/portada.css"></head>
+<body>
+<!-- ===== ACCESO PÚBLICO + ÚNICO ROL ADMINISTRADOR ===== -->
+<div class="access-bar" id="accessBar" title="Solo el administrador puede editar imágenes, archivos y contenido.">
+<span class="access-status"><span class="status-dot"></span><span id="accessStatus">Visitante público</span></span><span class="visitor-lock-note" id="visitorLockNote">Solo el administrador puede editar imágenes, archivos y contenido.</span>
+<button class="access-btn" id="loginBtn" type="button">⌘ Iniciar sesión</button>
+<button aria-label="Editar solo disponible para administrador" class="access-btn edit-btn admin-only" disabled="" id="editBtn" type="button">✎ Editar</button>
+<button class="access-btn logout-btn" hidden="" id="logoutBtn" type="button">↪ Salir</button>
+</div>
+<div aria-hidden="true" class="auth-modal" id="authModal">
+<div class="auth-backdrop" data-close-auth=""></div>
+<div aria-labelledby="authTitle" aria-modal="true" class="auth-card" role="dialog">
+<button aria-label="Cerrar" class="auth-close" data-close-auth="" type="button">×</button>
+<div class="auth-orb">✦</div>
+<div class="auth-kicker">PORTAL DE ACCESO</div>
+<h2 id="authTitle">Iniciar sesión</h2>
+<p>El portafolio es público. Solo existe un rol con permisos de edición: <b>Administrador</b>.</p>
+<form id="authForm">
+<label class="auth-label" for="authUser">Usuario administrador</label>
+<input autocomplete="username" class="auth-input" id="authUser" placeholder="Usuario" required=""/>
+<label class="auth-label" for="authPass">Contraseña</label>
+<input autocomplete="current-password" class="auth-input" id="authPass" placeholder="Contraseña" required="" type="password"/>
+<button class="auth-submit" type="submit">Entrar como administrador ✦</button>
+<div class="auth-hint" id="authHint">Administrador: admin / admin123</div>
+<div class="auth-error" id="authError" role="alert"></div>
+</form>
+<div class="auth-note">El visitante puede visualizar el portafolio, pero no puede editar, eliminar ni añadir contenido.</div>
+</div>
+</div>
+<div aria-hidden="true" class="edit-panel" id="editPanel">
+<div class="edit-panel-head">
+<div><span>✦ MODO ADMINISTRADOR</span><strong>Editor rápido</strong></div>
+<button aria-label="Cerrar editor" id="closeEdit" type="button">×</button>
+</div>
+<p>Modifica estos campos y guarda los cambios en este navegador.</p>
+<label>Nombre visible<input id="editName" type="text"/></label>
+<label>Descripción<input id="editIntro" type="text"/></label>
+<label>Biografía<textarea id="editBio" rows="4"></textarea></label>
+<div class="media-admin-box"><strong>🖼️ Imágenes y archivos</strong><p>En modo administrador, pulsa <b>“✎ Cambiar imagen”</b> sobre una imagen o <b>“✎ Reemplazar archivo”</b> junto a un PDF/Word para sustituirlo. El visitante solo puede visualizar.</p></div>
+<div class="edit-actions"><button class="save-edit" id="saveEdit" type="button">Guardar cambios</button><button id="resetEdit" type="button">Restaurar</button></div>
+<small>Los cambios de texto y medios se guardan localmente en este navegador.</small>
+</div>
+<div class="app-screen" id="app-screen"><div class="layout">
+<aside class="sidebar">
+<div class="brand">
+<img alt="Logo de la Universidad Peruana Los Andes - UPLA" class="upla-logo" src="assets/upla-logo.png"/>
+<h1 class="portfolio-title">MI PORTAFOLIO DIGITAL</h1>
+<p class="portfolio-name">MICHAEL RAMOS ZAMORA</p>
+</div>
+<nav class="nav">
+<a href="#inicio">⌂ Inicio</a><a href="#perfil">♙ Sobre mí</a><a href="#habilidades">⚙ Habilidades</a><a href="#proyectos">▣ Proyectos · Unidades</a><a href="#contacto">✉ Contacto</a>
+<a href="#cv">▤ Mi CV</a><a href="documentos/index.html">▥ Documentos</a><a href="#cosmos">✦ Cosmos</a></nav>
+<div aria-label="Redes sociales" class="social">
+<a aria-label="Facebook" href="https://www.facebook.com/share/1FHPtd9LFZ/" rel="noopener noreferrer" target="_blank">f</a>
+<a aria-label="Instagram" href="https://www.instagram.com/michael.zamora_?stkn=MWJpY3JqazVjYzB5bw==&amp;utm_source=ig_contact_invite" rel="noopener noreferrer" target="_blank">◎</a>
+<a aria-label="TikTok" href="https://www.tiktok.com/@m..ramos.zamora?_r=1&amp;_t=ZS-99kAOuRb0y5" rel="noopener noreferrer" target="_blank">♪</a>
+<a aria-label="WhatsApp" href="https://wa.me/51932736930" rel="noopener noreferrer" target="_blank">WA</a>
+</div>
+<div class="quote">“El conocimiento es el primer paso para construir un mejor mañana.”<br/><br/>— Michael Ramos</div>
+</aside>
+<main>
+<section class="hero" id="inicio"><div aria-hidden="true" class="cosmic-orbit"></div><div class="hero-content"><div class="hero-brand"><img alt="Logo UPLA" src="assets/upla-logo.png"/><span>MI PORTAFOLIO DIGITAL · UPLA</span></div><div class="eyebrow">PORTAFOLIO ACADÉMICO · BASE DE DATOS II</div><h2>Ramos Zamora<br/>Michael Deivys</h2><div class="role">Estudiante · Facultad de Ingeniería de Sistemas y Computación</div><p class="intro">Un espacio digital para presentar mi aprendizaje, proyectos, evidencias y evolución profesional en el mundo de las bases de datos y la ingeniería de sistemas.</p><div class="actions"><a class="btn primary" href="#proyectos">Ver proyectos →</a><a class="btn" href="#unidades">Explorar unidades ↓</a></div></div></section>
+<section id="perfil"><div class="container"><div class="section-head"><span class="mark">◈</span><h2>Sobre mí</h2><p>Mi ficha académica</p></div><div class="grid2"><div class="card profile"><span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span><div class="sheet-top">
+<div class="profile-photo">
+<img alt="Fotografía de perfil de Michael Ramos Zamora" src="assets/evidencias/perfil.jpg">
+</img></div>
+<div class="sheet-name">
+<h1>Ramos Zamora Michael Deivys</h1>
+<p class="title">Estudiante · Facultad de Ingeniería de Sistemas y Computación</p>
+</div>
+</div><div class="profile-bio">
+<strong>Ingeniero de Sistemas en formación.</strong>
+        Me interesa el desarrollo de soluciones tecnológicas, la gestión de bases de datos y la construcción
+        de sistemas útiles, seguros y eficientes. Este portafolio reúne mi aprendizaje y evolución profesional.
+        <div class="skills-row">
+<span class="skill-pill">Bases de datos</span>
+<span class="skill-pill">Desarrollo de software</span>
+<span class="skill-pill">Análisis de sistemas</span>
+<span class="skill-pill">Tecnología</span>
+</div>
+</div><div class="sheet-grid">
+<div class="stat"><div class="k">Universidad</div><div class="v">Universidad Peruana Los Andes</div></div>
+<div class="stat"><div class="k">Curso</div><div class="v">Base de Datos II (332151)</div></div>
+<div class="stat"><div class="k">Semestre</div><div class="v">2026-II</div></div>
+<div class="stat"><div class="k">Docente</div><div class="v">Mg. Raúl Enrique Fernández Bejarano</div></div>
+<div class="stat"><div class="k">Rol en el portafolio</div><div class="v">Administrador</div></div>
+<div class="stat"><div class="k">Sede</div><div class="v">Huancayo, Perú</div></div>
+</div></div><div class="card"><h3>Datos del curso</h3><div class="stats"><div class="stat"><b>Universidad</b><span>Universidad Peruana Los Andes</span></div><div class="stat"><b>Curso</b><span>Base de Datos II (332151)</span></div><div class="stat"><b>Semestre</b><span>2026-II</span></div><div class="stat"><b>Docente</b><span>Mg. Raúl Enrique Fernández Bejarano</span></div><div class="stat"><b>Rol</b><span>Administrador</span></div><div class="stat"><b>Sede</b><span>Huancayo, Perú</span></div></div></div></div></div></section><section id="cosmos"><div class="container"><div class="section-head"><span class="mark">✦</span><h2>Choque Planetario</h2><p>Un pequeño viaje por el cosmos</p></div><div class="card"><div class="cosmos-video-wrap"><video class="cosmos-video" controls autoplay muted loop playsinline preload="metadata"><source src="assets/videos/choque-planetas.mp4" type="video/mp4">Tu navegador no puede reproducir este video.</video><div class="cosmos-caption">Simulación visual de dos planetas acercándose y colisionando en el espacio.</div></div></div></div></section>
+<section id="cv">
+<div class="container">
+<div class="section-head">
+<span class="mark">▤</span>
+<h2>Mi Currículum Vitae</h2>
+<p>Perfil académico y profesional</p>
+</div>
+<div class="grid2" style="align-items:stretch;">
+<div class="card profile" style="display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:28px;">
+<div class="profile-photo" style="width:150px;height:190px;margin:0 auto 18px;">
+<img alt="Foto de perfil de Michael Ramos Zamora" src="assets/evidencias/perfil.jpg" style="width:100%;height:100%;object-fit:cover;border-radius:22px;"/>
+</div>
+<h3 style="margin:0 0 8px;">Michael Ramos Zamora</h3>
+<p style="margin:0 0 18px;">Estudiante · Ingeniería de Sistemas y Computación</p>
+<p style="max-width:420px;">
+          Presento mi CV dentro del portafolio para complementar mi perfil académico,
+          experiencia, competencias y proyectos.
+        </p>
+<a class="btn primary" href="assets/cv/michael-ramos-cv.jpg" rel="noopener" target="_blank">
+          Ver CV completo ↗
+        </a>
+</div>
+<div class="card" style="padding:18px; overflow:hidden;">
+<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px;">
+<div>
+<span class="eyebrow">CURRÍCULUM VITAE</span>
+<h3 style="margin:6px 0 0;">Perfil profesional</h3>
+</div>
+<span class="skill-pill">CV</span>
+</div>
+<a href="assets/cv/michael-ramos-cv.jpg" rel="noopener" style="display:block;" target="_blank">
+<img alt="Currículum Vitae de Michael Ramos Zamora" src="assets/cv/michael-ramos-cv.jpg" style="display:block;width:100%;height:auto;border-radius:16px;border:1px solid rgba(255,215,100,.35);"/>
+</a>
+<p style="margin:12px 4px 0;font-size:.9rem;opacity:.8;">
+          Haz clic sobre el CV para verlo en tamaño completo.
+        </p>
+</div>
+</div>
+</div>
+</section>
+<section id="habilidades"><div class="container"><div class="section-head"><span class="mark">⚙</span><h2>Habilidades</h2><p>Tecnologías y competencias</p></div><div class="card"><div class="skills">
+<div class="skill"><span>Base de datos</span><b>90%</b><div class="bar"><i style="width:90%"></i></div></div><div class="skill"><span>Desarrollo de software</span><b>82%</b><div class="bar"><i style="width:82%"></i></div></div><div class="skill"><span>Análisis de sistemas</span><b>80%</b><div class="bar"><i style="width:80%"></i></div></div><div class="skill"><span>SQL</span><b>78%</b><div class="bar"><i style="width:78%"></i></div></div><div class="skill"><span>Arquitectura de BD</span><b>76%</b><div class="bar"><i style="width:76%"></i></div></div><div class="skill"><span>Tecnología</span><b>85%</b><div class="bar"><i style="width:85%"></i></div></div>
+</div></div></div></section>
+<section id="proyectos"><div class="container"><div class="section-head"><span class="mark">▣</span><h2>Proyectos · Ruta académica</h2><p>Las evidencias están organizadas dentro de sus unidades y semanas, en el orden original.</p></div>
+<div class="project-intro"><div><span class="arcane-label">✦ GRIMORIO ACADÉMICO</span><h3>Unidades → Semanas → Evidencias</h3><p>Entra a cada unidad para consultar sus cuatro semanas. Las infografías de la <strong>Semana 02 de la Unidad I</strong> permanecen dentro de esa semana, y las <strong>Preguntas del Grimorio</strong> permanecen dentro de la <strong>Semana 01</strong>.</p></div><div class="project-rune">✧</div></div>
+<div aria-label="Unidades de aprendizaje" class="unit-card-grid">
+<a class="unit-card" data-unit="1" href="unidades/unidad-1/index.html">
+<span class="unit-card-number">UNIDAD 1</span><strong>Arquitecturas de BD</strong>
+<span class="unit-card-desc">Introducción a los Sistemas Informáticos</span><span class="unit-card-arrow">›</span>
+</a>
+<a class="unit-card" data-unit="2" href="unidades/unidad-2/index.html">
+<span class="unit-card-number">UNIDAD 2</span><strong>Instancias y Almacenamiento</strong>
+<span class="unit-card-desc">Gestión de motores y almacenamiento de datos</span><span class="unit-card-arrow">›</span>
+</a>
+<a class="unit-card" data-unit="3" href="unidades/unidad-3/index.html">
+<span class="unit-card-number">UNIDAD 3</span><strong>Seguridad y Backups</strong>
+<span class="unit-card-desc">Seguridad, roles, privilegios y recuperación</span><span class="unit-card-arrow">›</span>
+</a>
+<a class="unit-card" data-unit="4" href="unidades/unidad-4/index.html">
+<span class="unit-card-number">UNIDAD 4</span><strong>Monitoreo y Flashback</strong>
+<span class="unit-card-desc">Auditoría, consultas y recuperación temporal</span><span class="unit-card-arrow">›</span>
+</a>
+</div>
+</div></section><section id="contacto"><div class="container"><div class="section-head"><span class="mark">✉</span><h2>Contacto</h2><p>Hablemos</p></div><div class="card"><h3>Disponible para seguir aprendiendo y creando</h3><p>Este portafolio presenta mi formación en Ingeniería de Sistemas y el trabajo desarrollado para Base de Datos II.</p><div class="chips"><span class="chip">UPLA</span><span class="chip">Base de Datos II</span><span class="chip">Ingeniería de Sistemas</span><span class="chip">2026-II</span><span class="chip">Huancayo · Perú</span></div></div></div></section>
+<section id="contacto">
+<div class="container">
+<div class="section-head"><span class="mark">✉</span><h2>Contacto</h2><p>Conecta conmigo</p></div>
+<div class="card">
+<div class="contact-inline">
+<a class="social-link" href="https://wa.me/51932736930" rel="noopener noreferrer" target="_blank">
+<span aria-hidden="true" class="social-icon brand-whatsapp"><svg role="img" viewbox="0 0 24 24"><path d="M12 2a10 10 0 0 0-8.7 14.9L2 22l5.3-1.3A10 10 0 1 0 12 2zm0 2a8 8 0 0 1 6.9 12l-.3.5.3 2.1-2.1-.5-.5.3A8 8 0 1 1 12 4zm-3 3.2c-.2 0-.5.1-.7.3-.4.4-1 1-1 2.2 0 1.3 1 2.6 1.1 2.8.1.2 2 3.2 5 4.4 2.5 1 3 .8 3.5.7.5-.1 1.7-.7 1.9-1.4.2-.7.2-1.3.1-1.4-.1-.1-.3-.2-.7-.4l-1.8-.9c-.3-.1-.5-.1-.7.2l-.7.9c-.2.2-.4.3-.7.1-.4-.2-1.5-.6-2.3-1.5-.6-.7-1-1.5-1.1-1.7-.1-.3 0-.4.2-.6l.5-.6c.2-.2.2-.4.1-.7l-.7-1.7c-.2-.5-.4-.7-.7-.7z"></path></svg></span><span>WhatsApp<small>+51 932 736 930</small></span>
+</a>
+<a class="social-link" href="https://www.facebook.com/share/1FHPtd9LFZ/" rel="noopener noreferrer" target="_blank">
+<span aria-hidden="true" class="social-icon brand-facebook"><svg role="img" viewbox="0 0 24 24"><path d="M13.5 21v-8h2.7l.4-3h-3.1V8.1c0-.9.3-1.6 1.7-1.6h1.8V3.8c-.3 0-1.3-.1-2.4-.1-2.4 0-4.1 1.5-4.1 4.2V10H8v3h2.5v8h3z"></path></svg></span><span>Facebook<small>Red social</small></span>
+</a>
+<a class="social-link" href="https://www.instagram.com/michael.zamora_?stkn=MWJpY3JqazVjYzB5bw==&amp;utm_source=ig_contact_invite" rel="noopener noreferrer" target="_blank">
+<span aria-hidden="true" class="social-icon brand-instagram"><svg role="img" viewbox="0 0 24 24"><path d="M7.2 2h9.6A5.2 5.2 0 0 1 22 7.2v9.6a5.2 5.2 0 0 1-5.2 5.2H7.2A5.2 5.2 0 0 1 2 16.8V7.2A5.2 5.2 0 0 1 7.2 2zm0 2A3.2 3.2 0 0 0 4 7.2v9.6A3.2 3.2 0 0 0 7.2 20h9.6a3.2 3.2 0 0 0 3.2-3.2V7.2A3.2 3.2 0 0 0 16.8 4H7.2zm9.9 1.5a1.3 1.3 0 1 1 0 2.6 1.3 1.3 0 0 1 0-2.6zM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"></path></svg></span><span>Instagram<small>@michael.zamora_</small></span>
+</a>
+<a class="social-link" href="https://www.tiktok.com/@m..ramos.zamora?_r=1&amp;_t=ZS-99kAOuRb0y5" rel="noopener noreferrer" target="_blank">
+<span aria-hidden="true" class="social-icon brand-tiktok"><svg role="img" viewbox="0 0 24 24"><path d="M16.6 3c.4 2.1 1.6 3.5 3.4 4v3.1a8.5 8.5 0 0 1-3.4-1V15a6 6 0 1 1-6-6c.4 0 .8 0 1.2.1v3.2a3 3 0 1 0 1.8 2.7V3h3z"></path></svg></span><span>TikTok<small>@m..ramos.zamora</small></span>
+</a>
+</div>
+</div>
+</div>
+</section>
+<footer><strong>MI PORTAFOLIO DIGITAL · MICHAEL RAMOS ZAMORA</strong><br/>Ingeniería de Sistemas · Universidad Peruana Los Andes (UPLA) · 2026-II</footer>
+</main>
+<aside aria-label="Contacto y redes sociales" class="right-rail">
+<div class="rail-card">
+<div aria-hidden="true" class="rail-orbit"></div>
+<div class="rail-kicker">CENTRO DE CONTACTO</div>
+<h3>Michael Ramos</h3>
+<p>Conecta conmigo para proyectos, colaboraciones y oportunidades.</p>
+<div class="social-grid">
+<a class="social-link" href="https://wa.me/51932736930" rel="noopener noreferrer" target="_blank">
+<span aria-hidden="true" class="social-icon brand-whatsapp"><svg role="img" viewbox="0 0 24 24"><path d="M12 2a10 10 0 0 0-8.7 14.9L2 22l5.3-1.3A10 10 0 1 0 12 2zm0 2a8 8 0 0 1 6.9 12l-.3.5.3 2.1-2.1-.5-.5.3A8 8 0 1 1 12 4zm-3 3.2c-.2 0-.5.1-.7.3-.4.4-1 1-1 2.2 0 1.3 1 2.6 1.1 2.8.1.2 2 3.2 5 4.4 2.5 1 3 .8 3.5.7.5-.1 1.7-.7 1.9-1.4.2-.7.2-1.3.1-1.4-.1-.1-.3-.2-.7-.4l-1.8-.9c-.3-.1-.5-.1-.7.2l-.7.9c-.2.2-.4.3-.7.1-.4-.2-1.5-.6-2.3-1.5-.6-.7-1-1.5-1.1-1.7-.1-.3 0-.4.2-.6l.5-.6c.2-.2.2-.4.1-.7l-.7-1.7c-.2-.5-.4-.7-.7-.7z"></path></svg></span><span>WhatsApp<small>+51 932 736 930</small></span>
+</a>
+<a class="social-link" href="https://www.facebook.com/share/1FHPtd9LFZ/" rel="noopener noreferrer" target="_blank">
+<span aria-hidden="true" class="social-icon brand-facebook"><svg role="img" viewbox="0 0 24 24"><path d="M13.5 21v-8h2.7l.4-3h-3.1V8.1c0-.9.3-1.6 1.7-1.6h1.8V3.8c-.3 0-1.3-.1-2.4-.1-2.4 0-4.1 1.5-4.1 4.2V10H8v3h2.5v8h3z"></path></svg></span><span>Facebook<small>Perfil / página</small></span>
+</a>
+<a class="social-link" href="https://www.instagram.com/michael.zamora_?stkn=MWJpY3JqazVjYzB5bw==&amp;utm_source=ig_contact_invite" rel="noopener noreferrer" target="_blank">
+<span aria-hidden="true" class="social-icon brand-instagram"><svg role="img" viewbox="0 0 24 24"><path d="M7.2 2h9.6A5.2 5.2 0 0 1 22 7.2v9.6a5.2 5.2 0 0 1-5.2 5.2H7.2A5.2 5.2 0 0 1 2 16.8V7.2A5.2 5.2 0 0 1 7.2 2zm0 2A3.2 3.2 0 0 0 4 7.2v9.6A3.2 3.2 0 0 0 7.2 20h9.6a3.2 3.2 0 0 0 3.2-3.2V7.2A3.2 3.2 0 0 0 16.8 4H7.2zm9.9 1.5a1.3 1.3 0 1 1 0 2.6 1.3 1.3 0 0 1 0-2.6zM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"></path></svg></span><span>Instagram<small>@michael.zamora_</small></span>
+</a>
+<a class="social-link" href="https://www.tiktok.com/@m..ramos.zamora?_r=1&amp;_t=ZS-99kAOuRb0y5" rel="noopener noreferrer" target="_blank">
+<span aria-hidden="true" class="social-icon brand-tiktok"><svg role="img" viewbox="0 0 24 24"><path d="M16.6 3c.4 2.1 1.6 3.5 3.4 4v3.1a8.5 8.5 0 0 1-3.4-1V15a6 6 0 1 1-6-6c.4 0 .8 0 1.2.1v3.2a3 3 0 1 0 1.8 2.7V3h3z"></path></svg></span><span>TikTok<small>@m..ramos.zamora</small></span>
+</a>
+</div>
+<p class="contact-note">✦ El asistente <strong>Xal'tor</strong> ahora está inspirado visualmente en el agujero negro supermasivo <strong>Sagittarius A*</strong>.</p>
+</div>
+<div class="rail-card">
+<div class="rail-kicker">NÚCLEO DEL PORTAFOLIO</div>
+<h3>Ruta académica</h3>
+<p>Unidades → semanas → evidencias. Usa el menú principal para recorrer el contenido de Base de Datos II.</p>
+</div>
+</aside>
+</div></div>
+<script>
+/* Portafolio público: no requiere inicio de sesión. */
+document.querySelectorAll('.nav a').forEach(a=>{
+  a.addEventListener('click',()=>{
+    const href=a.getAttribute('href');
+    if(href && href.startsWith('#')){
+      setTimeout(()=>document.querySelector(href)?.scrollIntoView({behavior:'smooth',block:'start'}),20);
+    }
+  });
+});
+</script><script>
+(function(){
+ const root=document.getElementById('proyectos'); if(!root) return;
+ const tabs=[...root.querySelectorAll('.project-unit-tabs .unit-tab')];
+ const panels=[...root.querySelectorAll('.project-units > .unit-panel')];
+ function activate(n){tabs.forEach(t=>t.classList.toggle('is-active',t.dataset.unit===String(n)));panels.forEach(p=>p.classList.toggle('is-active',p.id===`unit-${n}`));}
+ tabs.forEach(t=>t.addEventListener('click',()=>activate(t.dataset.unit)));
+ activate(1);
+ // Lightbox for academic evidence images.
+ root.querySelectorAll('.quest-media img,.reg-card-media img,.sgbd-card-media img').forEach(img=>img.addEventListener('click',()=>{
+   const overlay=document.createElement('div'); overlay.className='evidence-lightbox'; overlay.innerHTML='<div class="lightbox-close">×</div><img alt="" src="'+img.src+'">'; document.body.appendChild(overlay); requestAnimationFrame(()=>overlay.classList.add('show')); overlay.addEventListener('click',e=>{if(e.target===overlay||e.target.classList.contains('lightbox-close')) overlay.remove()});
+ }));
+})();
+</script>
+<style>.evidence-lightbox{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.9);display:flex;align-items:center;justify-content:center;padding:30px;opacity:0;transition:opacity .2s}.evidence-lightbox.show{opacity:1}.evidence-lightbox img{max-width:92vw;max-height:90vh;width:auto!important;height:auto!important;object-fit:contain!important;box-shadow:0 20px 70px rgba(0,0,0,.6)}.lightbox-close{position:absolute;top:18px;right:25px;font-size:38px;color:#fff;cursor:pointer;line-height:1}
+.cosmos-video-wrap{margin-top:22px;border:1px solid rgba(212,154,42,.28);border-radius:18px;padding:10px;background:rgba(2,8,14,.78);box-shadow:0 0 35px rgba(39,190,255,.08), inset 0 0 25px rgba(212,154,42,.04)}
+.cosmos-video{display:block;width:100%;max-height:520px;object-fit:cover;border-radius:12px;background:#01050b}
+.cosmos-caption{margin:12px 4px 2px;color:#9fb2c0;font-size:14px;text-align:center}
+</style>
+<div class="cosmic-bot" id="cosmicBot">
+<button aria-label="Abrir asistente Xal'tor inspirado en Sagittarius A*" class="bot-toggle" id="botToggle">✦</button>
+<div aria-label="Asistente Xal'tor" class="bot-panel" id="botPanel" role="dialog">
+<div class="bot-head"><div class="bot-avatar">✦</div><div><b>Xal'tor</b><small>Sagittarius A* · Núcleo IA</small></div><button aria-label="Cerrar" class="bot-close" id="botClose">×</button></div>
+<div class="bot-messages" id="botMessages"><div class="bot-msg">Saludos, explorador. Soy <strong>Xal'tor</strong>, núcleo IA inspirado en <strong>Sagittarius A*</strong>. Puedo orientarte por las unidades, semanas, evidencias y datos de contacto de tu portafolio.</div></div>
+<div class="bot-quick"><button data-q="¿Qué contiene la Unidad I?">Unidad I</button><button data-q="¿Dónde están las preguntas del Grimorio?">Grimorio</button><button data-q="¿Qué contiene la Semana 02?">Semana 02</button><button data-q="¿Quién soy?">Sobre mí</button></div>
+<form class="bot-form" id="botForm"><input autocomplete="off" id="botInput" placeholder="Pregunta al núcleo Sagittarius A*…"><button>Enviar</button></input></form>
+</div>
+</div>
+<script>
+(()=>{
+ const panel=document.getElementById('botPanel'),toggle=document.getElementById('botToggle'),close=document.getElementById('botClose'),msgs=document.getElementById('botMessages'),form=document.getElementById('botForm'),input=document.getElementById('botInput');
+ if(!panel)return;
+ const add=(text,user=false)=>{const d=document.createElement('div');d.className='bot-msg'+(user?' user':'');d.innerHTML=text;msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight};
+ const answer=(q)=>{const x=q.toLowerCase(); if(x.includes('unidad i')||x.includes('unidad 1'))return 'La <strong>Unidad I — Arquitecturas de BD</strong> contiene sus cuatro semanas. La Semana 01 guarda el Grimorio de Preguntas; la Semana 02 conserva las infografías y evidencias de DBMS.'; if(x.includes('grimorio')||x.includes('preguntas'))return 'Las <strong>32 preguntas del Grimorio</strong> están dentro de la <strong>Semana 01 de la Unidad I</strong>, como una misión académica.'; if(x.includes('semana 02')||x.includes('semana 2'))return 'La <strong>Semana 02 de la Unidad I</strong> contiene la misión de despliegue y configuración de motores DBMS, además de sus infografías.'; if(x.includes('sobre mí')||x.includes('quién soy')||x.includes('quien soy'))return 'Soy el guardián virtual de <strong>Michael Ramos Zamora</strong>. Este portafolio presenta su formación en Ingeniería de Sistemas y el curso Base de Datos II.'; if(x.includes('unidad ii')||x.includes('unidad 2'))return '<strong>Unidad II — Instancias y Almacenamiento</strong>: semanas 5 a 8.'; if(x.includes('unidad iii')||x.includes('unidad 3'))return '<strong>Unidad III — Seguridad y Backups</strong>: semanas 9 a 12.'; if(x.includes('unidad iv')||x.includes('unidad 4'))return '<strong>Unidad IV — Monitoreo y Flashback</strong>: semanas 13 a 16.'; return 'Puedo ayudarte con <strong>unidades, semanas, evidencias, Grimorio y datos del portafolio</strong>. Prueba: “¿Dónde están las preguntas?”';};
+ const ask=q=>{if(!q.trim())return;add(q,true);input.value='';setTimeout(()=>add(answer(q)),260)};
+ toggle.onclick=()=>panel.classList.toggle('open'); close.onclick=()=>panel.classList.remove('open'); form.onsubmit=e=>{e.preventDefault();ask(input.value)}; document.querySelectorAll('.bot-quick button').forEach(b=>b.onclick=()=>ask(b.dataset.q));
+})();
+</script><script id="portfolio-editable-config">
+/*
+============================================================
+ ZONA EDITABLE — IMÁGENES DE LAS UNIDADES
+============================================================
+ Para cambiar o agregar una imagen de portada, coloca el archivo
+ dentro de /assets/imagenes/ y escribe aquí su ruta.
+ Ejemplo: image: "assets/imagenes/unidad-1.jpg"
+ Déjalo vacío ("") si no quieres imagen.
+ Las evidencias de cada semana están dentro de su carpeta.
+============================================================
+*/
+window.PORTAFOLIO_UNIDADES = {
+  unidad1: { image: "" },
+  unidad2: { image: "" },
+  unidad3: { image: "" },
+  unidad4: { image: "" }
+};
+document.querySelectorAll('.unit-card[data-unit]').forEach(card => {
+  const item = window.PORTAFOLIO_UNIDADES['unidad' + card.dataset.unit];
+  if (item && item.image) {
+    card.style.setProperty('--unit-image', `url("${item.image}")`);
+    card.classList.add('has-image');
+  }
+});
+</script>
+<script id="public-access-js">
+(function(){
+  const modal=document.getElementById('authModal');
+  const loginBtn=document.getElementById('loginBtn');
+  const editBtn=document.getElementById('editBtn');
+  const logoutBtn=document.getElementById('logoutBtn');
+  const status=document.getElementById('accessStatus');
+  const form=document.getElementById('authForm');
+  const error=document.getElementById('authError');
+  const hint=document.getElementById('authHint');
+  const editPanel=document.getElementById('editPanel');
+  const app=document.getElementById('app-screen');
+  const DEFAULTS={
+    name:'Ramos Zamora Michael Deivys',
+    intro:'Un espacio digital para presentar mi aprendizaje, proyectos, evidencias y evolución profesional en el mundo de las bases de datos y la ingeniería de sistemas.',
+    bio:'Ingeniero de Sistemas en formación. Me interesa el desarrollo de soluciones tecnológicas, la gestión de bases de datos y la construcción de sistemas útiles, seguros y eficientes. Este portafolio reúne mi aprendizaje y evolución profesional.'
+  };
+  const $=id=>document.getElementById(id);
+  function openAuth(){ modal.classList.add('open');modal.setAttribute('aria-hidden','false');$('authUser').focus(); }
+  function closeAuth(){ modal.classList.remove('open');modal.setAttribute('aria-hidden','true');error.textContent=''; }
+  function applyRole(role){
+    const admin=role==='admin';
+    status.textContent=admin?'Administrador':'Visitante público';
+    editBtn.disabled=!admin;
+    editBtn.setAttribute('aria-hidden', admin ? 'false' : 'true');
+    editBtn.title = admin ? 'Abrir editor de administrador' : 'Solo disponible para el administrador';
+    logoutBtn.hidden=false;
+    loginBtn.textContent='✓ Sesión activa';
+    loginBtn.disabled=true;
+    if(admin) editBtn.title='Abrir editor de administrador';
+    localStorage.setItem('portfolioRole',role);
+    localStorage.setItem('portfolioEditMode', role==='admin' ? 'true' : 'false');
+    document.dispatchEvent(new Event('portfolio-edit-mode'));
+  }
+  function logout(){
+    localStorage.removeItem('portfolioRole');
+    status.textContent='Visitante público';editBtn.disabled=true;logoutBtn.hidden=true;localStorage.setItem('portfolioEditMode','false');document.dispatchEvent(new Event('portfolio-edit-mode'));
+    loginBtn.disabled=false;loginBtn.textContent='⌘ Iniciar sesión';editPanel.classList.remove('open');
+  }
+  loginBtn.addEventListener('click',openAuth);
+  document.querySelectorAll('[data-close-auth]').forEach(x=>x.addEventListener('click',closeAuth));
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')closeAuth()});
+  form.addEventListener('submit',function(e){
+    e.preventDefault();
+    const u=$('authUser').value.trim(),p=$('authPass').value;
+    const ok=(u==='admin'&&p==='admin123');
+    if(!ok){error.textContent='Credenciales de administrador incorrectas.';return}
+    applyRole('admin');closeAuth();
+    editPanel.classList.add('open');
+  });
+  logoutBtn.addEventListener('click',logout);
+  editBtn.addEventListener('click',()=>{
+    if(editBtn.disabled)return;
+    const saved=JSON.parse(localStorage.getItem('portfolioEdits')||'{}');
+    $('editName').value=saved.name||DEFAULTS.name;
+    $('editIntro').value=saved.intro||DEFAULTS.intro;
+    $('editBio').value=saved.bio||DEFAULTS.bio;
+    const opening=!editPanel.classList.contains('open');
+    editPanel.classList.toggle('open');
+    localStorage.setItem('portfolioEditMode', opening ? 'true' : 'false');
+    document.dispatchEvent(new Event('portfolio-edit-mode'));
+  });
+  $('closeEdit').addEventListener('click',()=>editPanel.classList.remove('open'));
+  function setText(selector,value){const el=document.querySelector(selector);if(el)el.textContent=value;}
+  function loadEdits(){
+    const saved=JSON.parse(localStorage.getItem('portfolioEdits')||'{}');
+    if(saved.name){setText('.sheet-name h1',saved.name);const hero=document.querySelector('.hero h2');if(hero)hero.innerHTML=saved.name.replace(/\s+/, '<br/>');}
+    if(saved.intro)setText('.hero .intro',saved.intro);
+    if(saved.bio){
+      const b=document.querySelector('.profile-bio');
+      if(b){const strong=b.querySelector('strong');b.innerHTML='';const s=document.createElement('strong');s.textContent='Ingeniero de Sistemas en formación.';b.appendChild(s);b.append(' '+saved.bio.replace(/^Ingeniero de Sistemas en formación\.\s*/i,''));const chips=document.createElement('div');chips.className='skills-row';chips.innerHTML='<span class="skill-pill">Bases de datos</span><span class="skill-pill">Desarrollo de software</span><span class="skill-pill">Análisis de sistemas</span><span class="skill-pill">Tecnología</span>';b.appendChild(chips);}
+    }
+  }
+  $('saveEdit').addEventListener('click',()=>{
+    const saved={name:$('editName').value.trim()||DEFAULTS.name,intro:$('editIntro').value.trim()||DEFAULTS.intro,bio:$('editBio').value.trim()||DEFAULTS.bio};
+    localStorage.setItem('portfolioEdits',JSON.stringify(saved));loadEdits();editPanel.classList.remove('open');
+  });
+  $('resetEdit').addEventListener('click',()=>{localStorage.removeItem('portfolioEdits');location.reload()});
+  loadEdits();
+  const role=localStorage.getItem('portfolioRole'); if(role==='admin')applyRole('admin'); else logout();
+
+  // Cursor mágico: halo + anillo + pequeñas chispas.
+  if(matchMedia('(pointer:fine)').matches){
+    const glow=document.createElement('div');glow.className='cursor-glow';
+    const ring=document.createElement('div');ring.className='cursor-ring';
+    document.body.append(glow,ring);
+    let mx=innerWidth/2,my=innerHeight/2,rx=mx,ry=my,lastSpark=0;
+    addEventListener('mousemove',e=>{
+      mx=e.clientX;my=e.clientY;glow.style.left=mx+'px';glow.style.top=my+'px';
+      rx+=(mx-rx)*.22;ry+=(my-ry)*.22;ring.style.left=rx+'px';ring.style.top=ry+'px';
+      if(performance.now()-lastSpark>70){lastSpark=performance.now();const sp=document.createElement('i');sp.className='cursor-spark';sp.style.left=mx+'px';sp.style.top=my+'px';document.body.appendChild(sp);setTimeout(()=>sp.remove(),700);}
+    });
+    document.querySelectorAll('a,button,input,textarea,select,summary').forEach(el=>{
+      el.addEventListener('mouseenter',()=>ring.classList.add('hover'));
+      el.addEventListener('mouseleave',()=>ring.classList.remove('hover'));
+    });
+  }
+})();
+</script>
+<script src="assets/media-editor.js"></script>
+<script src="assets/galactic-enhancements.js"></script>
+<script src="assets/content-editor.js"></script><script src="assets/admin-publish.js"></script><script src="assets/efectos.js"></script><script src="assets/portada.js"></script></body></html>

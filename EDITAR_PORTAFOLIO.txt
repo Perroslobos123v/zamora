@@ -1,0 +1,20 @@
+GUIA RAPIDA
+
+1. El inicio está en index.html.
+2. La zona PORTAFOLIO_UNIDADES permite cambiar las imágenes de portada de las 4 unidades.
+3. Las unidades están en /unidades/unidad-1 ... unidad-4/.
+4. Cada unidad contiene semana-1, semana-2, semana-3 y semana-4.
+5. Para agregar imágenes, súbelas dentro de la carpeta de la semana y modifica el index.html de esa semana.
+6. Las imágenes existentes que antes estaban incrustadas en index.html fueron separadas a /assets/evidencias/ para que sea más fácil reemplazarlas.
+
+
+8. El portafolio ahora es público: no requiere login para visualizarlo.
+9. Iniciar sesión permite seleccionar Visitante o Administrador. Demo local: visitante/1234 y admin/admin123.
+10. El botón Editar aparece habilitado para Administrador y guarda cambios en el navegador mediante localStorage.
+11. La foto de perfil fue reemplazada por la fotografía proporcionada.
+12. Se añadió un efecto cósmico al cursor (halo, anillo y chispas) en computadoras con mouse.
+
+13. Los botones ☁ de OneDrive se gestionan desde assets/onedrive-links.js. Consulta assets/ONEDRIVE_GUIA.txt.
+
+14. Los documentos de cada semana van en su carpeta: documentos/ (PDF y Word), scripts/ (.sql y .sql.html) e infografias/. Ya no se usa la carpeta evidencias/ dentro de las semanas.
+15. El Centro de documentos está en documentos/index.html y se enlaza desde el menú lateral.
